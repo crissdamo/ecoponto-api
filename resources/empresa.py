@@ -12,7 +12,7 @@ from extensions.database import db
 
 import logging.handlers
 
-from utilities import valida_email
+from utilities.valida_email import validar_email
 from utilities.valida_cpf import validar_cnpj
 
 blp = Blueprint("Empresas", "empresas", description="Operations on empresas")
@@ -80,7 +80,7 @@ class Empresas(MethodView):
         if EmpresaModel.query.filter(EmpresaModel.cnpj == cnpj).first():
             abort(409, message="CNPJ já cadastrado")
 
-        if not valida_email(email):
+        if not validar_email(email):
             abort(409, message="CNPJ inválido")
         
         
