@@ -44,7 +44,7 @@ def create_app(db_url=None):
     # api.register_blueprint(UsuarioBlueprint)
     api.register_blueprint(EmpresaBlueprint)
     api.register_blueprint(TermoBlueprint)
-    api.register_blueprint(EcopontoBlueprint)
+    # api.register_blueprint(EcopontoBlueprint)
     api.register_blueprint(CategoriaBlueprint)
     api.register_blueprint(ResiduoBlueprint)
 
