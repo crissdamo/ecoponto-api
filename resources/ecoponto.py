@@ -11,7 +11,7 @@ from models.empresa import EmpresaModel
 from models.enums.situacao_ecoponto import SituacaoEnum
 from models.localizacao import LocalizacaoModel
 from models.residuo import ResiduoModel
-from schemas.empresa_ecoponto import EcopontoSchema, PlainEcopontoSchema
+from schemas.empresa_ecoponto import EcopontoFuncionamentoSchema, EcopontoSchema, PlainEcopontoSchema
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
@@ -27,7 +27,7 @@ class Ecopontos(MethodView):
 
 
     @blp.arguments(PlainEcopontoSchema)
-    @blp.response(201, EcopontoSchema)
+    @blp.response(201, PlainEcopontoSchema)
     def post(self, ecoponto_data):
 
 
@@ -174,3 +174,66 @@ class Ecopontos(MethodView):
 
         return {"message": "Todos registros deletados."}
       
+
+@blp.route("/ecoponto/funcionamento")
+class EcopontoFuncionamento(MethodView):
+
+
+    @blp.arguments(EcopontoFuncionamentoSchema)
+    @blp.response(201, EcopontoFuncionamentoSchema)
+    def post(self, ecoponto_data):
+
+        # Dados recebidos:
+
+        ecoponto_id = ecoponto_data['ecoponto_id']
+
+        dias_funcionamento = ecoponto_data.get('dia_funcionamento')
+        
+        dias_funcionamento_list = []
+
+        # Cria objetos:
+        ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
+
+        if dias_funcionamento:
+
+            for funcionamento in dias_funcionamento:
+                
+                dia_semana = funcionamento.get('dia_semana')
+                hora_inicial = funcionamento.get('hora_inicial')
+                hora_final = funcionamento.get('hora_final')
+
+                dia_funcionamento_obj = DiaFuncionamentoModel(
+                    dia_semana=dia_semana,
+                    hora_inicial=hora_inicial,
+                    hora_final=hora_final,
+                    ecoponto=ecoponto
+                )
+
+                dias_funcionamento_list.append(dia_funcionamento_obj)
+
+ 
+        # # Salva em BD
+        try:
+           
+            for funcionamento in dias_funcionamento_list:
+                 db.session.add(funcionamento)
+
+            db.session.commit()
+
+            message = f"Dias de funcionamento do Ecoponto criados com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error create ecoponto diasfuncionamento: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao criar dias de funcionamento do ecoponto.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error create ecoponto diasfuncionamento: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        return ecoponto_data
+
