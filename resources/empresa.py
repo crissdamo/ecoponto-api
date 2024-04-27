@@ -12,8 +12,10 @@ from extensions.database import db
 
 import logging.handlers
 
+from utilities.apenas_digitos import apenas_digitos
 from utilities.valida_email import validar_email
-from utilities.valida_cpf import validar_cnpj
+from utilities.valida_cnpj import validar_cnpj
+from utilities.valida_telefone import validar_telefone
 
 blp = Blueprint("Empresas", "empresas", description="Operations on empresas")
 
@@ -47,7 +49,8 @@ class Empresas(MethodView):
     #     empresas = EmpresaModel().query.all()
     #     return empresas
 
-    @blp.arguments(PlainEmpresaSchema)
+    @blp.arguments(PlainEmpresaSchema, 
+        description="Cria um novo registro no banco de dados.")
     @blp.response(201, EmpresaSchema)
     def post(self, empresa_data):
 
@@ -83,7 +86,11 @@ class Empresas(MethodView):
         if not validar_email(email):
             abort(409, message="CNPJ inválido")
         
+        if not validar_telefone(telefone_contato):
+            abort(409, message="Formato do telefone inválido")
         
+        cnpj = apenas_digitos(str(cnpj))
+        telefone_contato = apenas_digitos(str(telefone_contato))
 
         # Cria objetos:
 
@@ -157,4 +164,39 @@ class Empresas(MethodView):
             abort(500, message="Server Error.")
 
         return empresa
+    
+   
+    def delete(self):
+    
+        empresas = EmpresaModel.query.all()
+        aceita_termo = TermoAceiteModel.query.all()
+
+        # Deletar
+        try:
+
+            for aceite in aceita_termo:
+                db.session.delete(aceite)
+
+            for empresa in empresas:
+                db.session.delete(empresa)
+                
+            db.session.commit()
+
+            message = f"Empresas deletadas com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error delete empresas: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar empresas.",
+            )
+            
+        except SQLAlchemyError as error:
+            message = f"Error delete empresas: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        return {"message": "Todos registros deletados."}
     

@@ -133,4 +133,44 @@ class Ecopontos(MethodView):
             abort(500, message="Server Error.")
 
         return ecoponto_data
+
+
+  
+    def delete(self):
     
+        ecopontos = EcopontoModel.query.all()
+        funcionamentos = DiaFuncionamentoModel.query.all()
+        localizacoes = LocalizacaoModel.query.all()
+
+        # Deletar
+        try:
+
+            for localizacao in localizacoes:
+                db.session.delete(localizacao)
+
+            for funcionamento in funcionamentos:
+                db.session.delete(funcionamento)
+
+            for ecoponto in ecopontos:
+                db.session.delete(ecoponto)
+
+            db.session.commit()
+
+            message = f"Ecopontos deletadas com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error delete ecopontos: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar ecopontos.",
+            )
+            
+        except SQLAlchemyError as error:
+            message = f"Error delete ecopontos: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        return {"message": "Todos registros deletados."}
+      

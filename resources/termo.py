@@ -28,7 +28,7 @@ class Termos(MethodView):
 
         # validações:
         if TermoModel.query.filter(TermoModel.titulo == titulo).first():
-            abort(409, message="E-mail já cadastrado")
+            abort(409, message="Título do termo já cadastrado")
 
     
         # Cria objeto:
@@ -62,7 +62,36 @@ class Termos(MethodView):
 
         return termo
     
+    
+    def delete(self):
+    
+        termos = TermoModel.query.all()
 
+        # Deletar
+        try:
+
+            for termo in termos:
+                db.session.delete(termo)
+            db.session.commit()
+
+            message = f"Termos deletados com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error delete termos: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar termos.",
+            )
+            
+        except SQLAlchemyError as error:
+            message = f"Error delete termos: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        return {"message": "Todos registros deletados."}
+    
 # @blp.route("/termo/eceite")
 # class AceiteTermos(MethodView):
 

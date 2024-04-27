@@ -19,7 +19,6 @@ class RegistrarUsuario(MethodView):
     def post(self, usuario_data):
 
         email = usuario_data["email"]
-        print(email)
 
         if UsuarioModel.query.filter(UsuarioModel.email == email).first():
             abort(409, message="E-mail já cadastrado")

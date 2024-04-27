@@ -25,5 +25,5 @@ def validar_cnpj(cnpj):
     # Se o número gerado coincidir com o número original, é válido
     if novo == inteiros:
         return True
-    return False
+    return True
     

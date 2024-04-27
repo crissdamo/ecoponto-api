@@ -75,3 +75,32 @@ class Categorias(MethodView):
 
         return categoria
     
+    def delete(self):
+    
+        categorias = CategoriaModel.query.all()
+
+        # Deletar
+        try:
+
+            for categoria in categorias:
+                db.session.delete(categoria)
+            db.session.commit()
+
+            message = f"Categorias deletadas com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error delete categorias: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar categorias.",
+            )
+            
+        except SQLAlchemyError as error:
+            message = f"Error delete categorias: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        return {"message": "Todos registros deletados."}
+    
