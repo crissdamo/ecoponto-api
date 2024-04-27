@@ -1,0 +1,47 @@
+[
+    {
+        "nome_fantasia": "Bem Natural",
+        "razao_social": "Bem Natural Comercio de Alimentos LTDA",
+        "cnpj": "36487069000139",
+        "telefone": "54996039247",
+        "nome_contato_responsavel": "Mariana Giacomelli",
+        "email": "mariana.giacomelli@hotmail.com",
+        "senha": "123456"
+    },
+    {
+        "nome_fantasia": "Quintal da Salsa",
+        "razao_social": "Quintal da Salsa Gastronomia LTDA",
+        "cnpj": "30179748000164",
+        "telefone": "5430170736",
+        "nome_contato_responsavel": "Pedro Padilha Kessler",
+        "email": "quintaldasalsacaxias@gmail.com",
+        "senha": "123456"
+    },
+    {
+        "nome_fantasia": "ASSOCIACAO DE ESTUDOS FILOSOFICOS DE CAXIAS DO SUL",
+        "razao_social": "CENTRO CULTURAL NOVA ACROPOLE DE CAXIAS DO SUL",
+        "cnpj": "04945194000159",
+        "telefone": "5430251227",
+        "nome_contato_responsavel": "Gustavo Massen",
+        "email": "caxiasdosul@nova-acropole.org.br",
+        "senha": "123456"
+    },
+    {
+        "nome_fantasia": "Monalis Odontologia",
+        "razao_social": "CONSULTORIO ODONTOLOGICO MONALIS LTDA",
+        "cnpj": "32112042000100",
+        "telefone": "54992503991",
+        "nome_contato_responsavel": "Lys Guerra",
+        "email": "monalis@gmail.com",
+        "senha": "123456"
+    },
+    {
+        "nome_fantasia": "BRINOX METALURGICA",
+        "razao_social": "BRINOX METALURGICA SA",
+        "cnpj": "92038108000191",
+        "telefone": "5440097000",
+        "nome_contato_responsavel": "Christian Emilio Hartenstein",
+        "email": "elizangela.dutra@grupobrinox.com.br",
+        "senha": "123456"
+    }
+]

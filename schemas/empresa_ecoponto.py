@@ -61,13 +61,12 @@ class PlainEcopontoSchema(Schema):
     dia_funcionamento = fields.List(fields.Nested(EcopontoDiaFuncionamento), required=False)
     
     residuos = fields.List(fields.Nested(ItemResiduoSchema), required=False)
-    localizacao = fields.Nested(EcopontoLocalizacaoSchema, required=False)
+    localizacao = fields.Nested(EcopontoLocalizacaoSchema, required=True)
 
 
 
 class EcopontoSchema(PlainEcopontoSchema):
     empresa = fields.Nested(PlainEmpresaSchema(), dump_only=True)
-    localizacao = fields.List(fields.Nested(EcopontoLocalizacaoSchema()), dump_only=True)
     residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
 
 

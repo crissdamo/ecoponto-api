@@ -1,0 +1,74 @@
+[
+    {
+        "empresa_id": 12,
+        "nome": "Bem Natural",
+        "localizacao": {
+          "rua": "Rua Sagitarius",
+          "numero": "664",
+          "bairro": "Cruzeiro",
+          "cep": "95074360",
+          "cidade": "Caxias do Sul",
+          "estado": "Rio Grande do Sul",
+          "latitude": "-29.17110",
+          "longitude": "-51.14016"
+        }
+    },
+    {
+        "empresa_id": 13,
+        "nome": "Quintal da Salsa",
+        "localizacao": {
+          "rua": "Rua Treze de Maio",
+          "numero": "1159",
+          "bairro": "Nossa Sra. de Lourdes",
+          "cep": "95084460",
+          "cidade": "Caxias do Sul",
+          "estado": "Rio Grande do Sul",
+          "latitude": "-29.17140",
+          "longitude": "-51.16764"
+        }
+      },
+      {
+        "empresa_id": 14,
+        "nome": "Nova Acrópoli",
+        "localizacao": {
+          "rua": "Rua Pinheiro Machado",
+          "numero": "399",
+          "bairro": "Nossa Sra. de Lourdes",
+          "cep": "95020170",
+          "cidade": "Caxias do Sul",
+          "estado": "Rio Grande do Sul",
+          "latitude": "-29.16642",
+          "longitude": "-51.16557"
+        }
+      },
+      {
+        "empresa_id": 15,
+        "nome": "Monalis",
+        "localizacao": {
+          "rua": "Rua Moreira César",
+          "numero": "2695",
+          "bairro": "Nossa Sra. de Lourdes",
+          "complemento": "sala 301",
+          "cep": "95034000",
+          "cidade": "Caxias do Sul",
+          "estado": "Rio Grande do Sul",
+          "latitude": "-29.16657",
+          "longitude": "-51.18574"
+        }
+      },
+      {
+        "empresa_id": 16,
+        "nome": "Brinox",
+        "localizacao": {
+          "rua": "Rod RSC-453",
+          "numero": "32503",
+          "bairro": "Nossa Sra. da Saúde",
+          "complemento": "Km 80",
+          "cep": "95032898",
+          "cidade": "Caxias do Sul",
+          "estado": "Rio Grande do Sul",
+          "latitude": "-29.13374",
+          "longitude": "-51.19270"
+        }
+      }
+]
