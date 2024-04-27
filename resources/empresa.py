@@ -165,7 +165,7 @@ class Empresas(MethodView):
 
         return empresa
     
-   
+    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
     def delete(self):
     
         empresas = EmpresaModel.query.all()

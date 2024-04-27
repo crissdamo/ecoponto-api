@@ -135,7 +135,7 @@ class Ecopontos(MethodView):
         return ecoponto_data
 
 
-  
+    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
     def delete(self):
     
         ecopontos = EcopontoModel.query.all()

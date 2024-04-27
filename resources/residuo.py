@@ -75,6 +75,7 @@ class Residuos(MethodView):
 
         return residuo
     
+    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
     def delete(self):
     
         residuos = ResiduoModel.query.all()
