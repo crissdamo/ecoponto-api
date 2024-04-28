@@ -21,3 +21,4 @@ class EcopontoModel(db.Model):
     dia_funcionamento = db.relationship("DiaFuncionamentoModel", back_populates="ecoponto", lazy="dynamic")
     localizacao = db.relationship("LocalizacaoModel", back_populates="ecoponto")
     residuo = db.relationship("ResiduoModel", back_populates="ecoponto", secondary="ecoponto_residuo")
+    

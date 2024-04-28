@@ -16,7 +16,7 @@ class PlainCategoriaSchema(Schema):
     url_midia = fields.Str(required=False)
     ativo = fields.Bool(dump_only=True)
 
-    residuos = fields.List(fields.Nested(ItemResiduoSchema), required=False)
+    residuo = fields.List(fields.Nested(ItemResiduoSchema), required=False)
     
 
 class PlainResiduoSchema(Schema):

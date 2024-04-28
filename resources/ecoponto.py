@@ -42,7 +42,7 @@ class Ecopontos(MethodView):
         localizacao = ecoponto_data.get('localizacao')
         dias_funcionamento = ecoponto_data.get('dia_funcionamento')
 
-        residuos = ecoponto_data.get('residuos')
+        residuos = ecoponto_data.get('residuo')
         
         dias_funcionamento_list = []
 
@@ -250,7 +250,7 @@ class EcopontoResiduo(MethodView):
 
         ecoponto_id = ecoponto_data['ecoponto_id']
         # descricao_outros_projetos = ecoponto_data.get('descricao_outros_projetos')
-        residuos = ecoponto_data.get('residuos')
+        residuos = ecoponto_data.get('residuo')
         
         # Cria objetos:
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)

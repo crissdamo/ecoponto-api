@@ -6,7 +6,7 @@ from models.empresa import EmpresaModel
 from models.perfil_usuario import PerfilUsuarioModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
-from schemas.empresa_ecoponto import EmpresaSchema, PlainEmpresaSchema
+from schemas.empresa_ecoponto import EmpresaSchema, EmpresaUpdateSchema, PlainEmpresaSchema
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from extensions.database import db
 
@@ -20,34 +20,68 @@ from utilities.valida_telefone import validar_telefone
 blp = Blueprint("Empresas", "empresas", description="Operations on empresas")
 
 
-# @blp.route("/empresa/<string:empresa_id>")
-# class Empresa(MethodView):
+@blp.route("/empresa/<int:empresa_id>")
+class Empresa(MethodView):
 
-#     @blp.response(200, EmpresaSchema)
-#     def get(self, empresa_id):
-#         empresa = EmpresaModel().query.get_or_404(empresa_id)
-#         return empresa
+    @blp.response(200, EmpresaSchema)
+    def get(self, empresa_id):
+        empresa = EmpresaModel().query.get_or_404(empresa_id)
+        return empresa
 
-#     def delete(self, empresa_id):
-#         empresa = EmpresaModel().query.get_or_404(empresa_id)
-#         raise NotImplementedError("Exclusão de empresa não está implementada")
+    def delete(self, empresa_id):
+        
+        try:
+            empresa = EmpresaModel().query.get_or_404(empresa_id)
+            db.session.delete(empresa)
+            db.session.commit()
 
+            message = f"Empresa excluída com sucesso"
+            logging.debug(message)
     
-#     @blp.arguments(EmpresaUpdateSchema)
-#     @blp.response(200, EmpresaSchema)
-#     def put(self, empresa_data, empresa_id):
-#         empresa = EmpresaModel().query.get_or_404(empresa_id)
-#         raise NotImplementedError("Edição de empresa não está implementada")
+        except IntegrityError as error:
+            message = f"Error delete empresa: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar empresa.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error delete empresa: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
 
+        return {"mensagem": message}
+    
+    # @blp.arguments(EmpresaUpdateSchema)
+    # @blp.response(200, EmpresaSchema)
+    # def put(self, empresa_data, empresa_id):
+
+    #     empresa = EmpresaModel.query.get(empresa_id)
+    #     if empresa:
+    #         item.price = item_data["price"]
+    #         item.name = item_data["name"]
+
+
+    #     else:
+    #         item = EmpresaModel(id=empresa_id, **item_data)
+        
+    #     db.session.add(item)
+    #     db.session.commit()
+
+    #     return item
+
+
+    #     empresa = EmpresaModel().query.get_or_404(empresa_id)
+    #     raise NotImplementedError("Edição de empresa não está implementada")
 
 
 @blp.route("/empresa")
 class Empresas(MethodView):
 
-    # @blp.response(200, EmpresaSchema(many=True))
-    # def get(self):
-    #     empresas = EmpresaModel().query.all()
-    #     return empresas
+    @blp.response(200, EmpresaSchema(many=True))
+    def get(self):
+        empresas = EmpresaModel().query.all()
+        return empresas
 
     @blp.arguments(PlainEmpresaSchema, 
         description="Cria um novo registro no banco de dados.")
