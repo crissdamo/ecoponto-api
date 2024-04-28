@@ -6,7 +6,7 @@ from models.empresa import EmpresaModel
 from models.perfil_usuario import PerfilUsuarioModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
-from schemas.empresa_ecoponto import EmpresaSchema, EmpresaUpdateSchema, PlainEmpresaSchema
+from schemas.empresa_ecoponto import EmpresaSchema, PlainEmpresaSchema
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from extensions.database import db
 
