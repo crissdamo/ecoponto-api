@@ -75,33 +75,33 @@ class Categorias(MethodView):
 
         return categoria
     
-    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
-    def delete(self):
+    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
+    # def delete(self):
     
-        categorias = CategoriaModel.query.all()
+    #     categorias = CategoriaModel.query.all()
 
-        # Deletar
-        try:
+    #     # Deletar
+    #     try:
 
-            for categoria in categorias:
-                db.session.delete(categoria)
-            db.session.commit()
+    #         for categoria in categorias:
+    #             db.session.delete(categoria)
+    #         db.session.commit()
 
-            message = f"Categorias deletadas com sucesso"
-            logging.debug(message)
+    #         message = f"Categorias deletadas com sucesso"
+    #         logging.debug(message)
     
-        except IntegrityError as error:
-            message = f"Error delete categorias: {error}"
-            logging.warning(message)
-            abort(
-                400,
-                message="Erro ao deletar categorias.",
-            )
+    #     except IntegrityError as error:
+    #         message = f"Error delete categorias: {error}"
+    #         logging.warning(message)
+    #         abort(
+    #             400,
+    #             message="Erro ao deletar categorias.",
+    #         )
             
-        except SQLAlchemyError as error:
-            message = f"Error delete categorias: {error}"
-            logging.warning(message)
-            abort(500, message="Server Error.")
+    #     except SQLAlchemyError as error:
+    #         message = f"Error delete categorias: {error}"
+    #         logging.warning(message)
+    #         abort(500, message="Server Error.")
 
-        return {"message": "Todos registros deletados."}
+    #     return {"message": "Todos registros deletados."}
     

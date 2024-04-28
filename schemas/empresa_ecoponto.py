@@ -66,8 +66,15 @@ class PlainEcopontoSchema(Schema):
 
 class EcopontoFuncionamentoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
-    dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=False)
-    empresa = fields.Nested(PlainEcopontoSchema(), dump_only=True)
+    dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=True)
+    ecoponto = fields.Nested(PlainEcopontoSchema(), dump_only=True)
+    
+
+class EcopontoResiduoSchema(Schema):
+    ecoponto_id = fields.Int(required=True)
+    # descricao_outros_projetos = fields.Str(required=True)
+    residuos = fields.List(fields.Nested(ItemResiduoSchema), required=True)
+    ecoponto = fields.Nested(PlainEcopontoSchema(), dump_only=True)
     
 
 class EcopontoSchema(PlainEcopontoSchema):

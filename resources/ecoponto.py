@@ -11,7 +11,7 @@ from models.empresa import EmpresaModel
 from models.enums.situacao_ecoponto import SituacaoEnum
 from models.localizacao import LocalizacaoModel
 from models.residuo import ResiduoModel
-from schemas.empresa_ecoponto import EcopontoFuncionamentoSchema, EcopontoSchema, PlainEcopontoSchema
+from schemas.empresa_ecoponto import EcopontoFuncionamentoSchema, EcopontoResiduoSchema, EcopontoSchema, PlainEcopontoSchema
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
@@ -135,44 +135,44 @@ class Ecopontos(MethodView):
         return ecoponto_data
 
 
-    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
-    def delete(self):
+    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
+    # def delete(self):
     
-        ecopontos = EcopontoModel.query.all()
-        funcionamentos = DiaFuncionamentoModel.query.all()
-        localizacoes = LocalizacaoModel.query.all()
+    #     ecopontos = EcopontoModel.query.all()
+    #     funcionamentos = DiaFuncionamentoModel.query.all()
+    #     localizacoes = LocalizacaoModel.query.all()
 
-        # Deletar
-        try:
+    #     # Deletar
+    #     try:
 
-            for localizacao in localizacoes:
-                db.session.delete(localizacao)
+    #         for localizacao in localizacoes:
+    #             db.session.delete(localizacao)
 
-            for funcionamento in funcionamentos:
-                db.session.delete(funcionamento)
+    #         for funcionamento in funcionamentos:
+    #             db.session.delete(funcionamento)
 
-            for ecoponto in ecopontos:
-                db.session.delete(ecoponto)
+    #         for ecoponto in ecopontos:
+    #             db.session.delete(ecoponto)
 
-            db.session.commit()
+    #         db.session.commit()
 
-            message = f"Ecopontos deletadas com sucesso"
-            logging.debug(message)
+    #         message = f"Ecopontos deletadas com sucesso"
+    #         logging.debug(message)
     
-        except IntegrityError as error:
-            message = f"Error delete ecopontos: {error}"
-            logging.warning(message)
-            abort(
-                400,
-                message="Erro ao deletar ecopontos.",
-            )
+    #     except IntegrityError as error:
+    #         message = f"Error delete ecopontos: {error}"
+    #         logging.warning(message)
+    #         abort(
+    #             400,
+    #             message="Erro ao deletar ecopontos.",
+    #         )
             
-        except SQLAlchemyError as error:
-            message = f"Error delete ecopontos: {error}"
-            logging.warning(message)
-            abort(500, message="Server Error.")
+    #     except SQLAlchemyError as error:
+    #         message = f"Error delete ecopontos: {error}"
+    #         logging.warning(message)
+    #         abort(500, message="Server Error.")
 
-        return {"message": "Todos registros deletados."}
+    #     return {"message": "Todos registros deletados."}
       
 
 @blp.route("/ecoponto/funcionamento")
@@ -232,6 +232,67 @@ class EcopontoFuncionamento(MethodView):
             )
         except SQLAlchemyError as error:
             message = f"Error create ecoponto diasfuncionamento: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        return ecoponto_data
+
+
+@blp.route("/ecoponto/residuo")
+class EcopontoResiduo(MethodView):
+
+    @blp.arguments(EcopontoResiduoSchema)
+    @blp.response(201, EcopontoResiduoSchema)
+    def post(self, ecoponto_data):
+
+        # Dados recebidos:
+
+        ecoponto_id = ecoponto_data['ecoponto_id']
+        # descricao_outros_projetos = ecoponto_data.get('descricao_outros_projetos')
+        residuos = ecoponto_data.get('residuos')
+        
+        # Cria objetos:
+        ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
+        print(ecoponto)
+
+        empresa = ecoponto.empresa
+
+        print(empresa)
+
+        # # Salva em BD
+        try:
+            # if descricao_outros_projetos:
+            #     empresa = ecoponto.empresa
+            #     empresa.descricao_outros_projetos = descricao_outros_projetos
+            #     db.session.add(empresa)
+
+
+            if residuos:
+                for residuo in residuos:
+                    id_residuo = residuo.get('id_residuo')
+                    residuo_object = ResiduoModel().query.get_or_404(id_residuo)
+                    
+                    categoria_residuo = EcopontoResiduoModel(
+                        residuo_id=residuo_object.id,
+                        ecoponto_id=ecoponto.id
+                    )
+                    db.session.add(categoria_residuo)
+
+                db.session.commit()
+
+
+            message = f"Relação deresíduos do ecoponto criados com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error create ecoponto residuos: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao criar relação de residuos do ecoponto.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error create ecoponto residuos: {error}"
             logging.warning(message)
             abort(500, message="Server Error.")
 

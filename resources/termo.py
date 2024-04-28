@@ -62,35 +62,35 @@ class Termos(MethodView):
 
         return termo
     
-    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
-    def delete(self):
+    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
+    # def delete(self):
     
-        termos = TermoModel.query.all()
+    #     termos = TermoModel.query.all()
 
-        # Deletar
-        try:
+    #     # Deletar
+    #     try:
 
-            for termo in termos:
-                db.session.delete(termo)
-            db.session.commit()
+    #         for termo in termos:
+    #             db.session.delete(termo)
+    #         db.session.commit()
 
-            message = f"Termos deletados com sucesso"
-            logging.debug(message)
+    #         message = f"Termos deletados com sucesso"
+    #         logging.debug(message)
     
-        except IntegrityError as error:
-            message = f"Error delete termos: {error}"
-            logging.warning(message)
-            abort(
-                400,
-                message="Erro ao deletar termos.",
-            )
+    #     except IntegrityError as error:
+    #         message = f"Error delete termos: {error}"
+    #         logging.warning(message)
+    #         abort(
+    #             400,
+    #             message="Erro ao deletar termos.",
+    #         )
             
-        except SQLAlchemyError as error:
-            message = f"Error delete termos: {error}"
-            logging.warning(message)
-            abort(500, message="Server Error.")
+    #     except SQLAlchemyError as error:
+    #         message = f"Error delete termos: {error}"
+    #         logging.warning(message)
+    #         abort(500, message="Server Error.")
 
-        return {"message": "Todos registros deletados."}
+    #     return {"message": "Todos registros deletados."}
     
 # @blp.route("/termo/eceite")
 # class AceiteTermos(MethodView):

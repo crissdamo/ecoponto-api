@@ -75,33 +75,33 @@ class Residuos(MethodView):
 
         return residuo
     
-    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
-    def delete(self):
+    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
+    # def delete(self):
     
-        residuos = ResiduoModel.query.all()
+    #     residuos = ResiduoModel.query.all()
 
-        # Deletar
-        try:
+    #     # Deletar
+    #     try:
 
-            for residuo in residuos:
-                db.session.delete(residuo)
-            db.session.commit()
+    #         for residuo in residuos:
+    #             db.session.delete(residuo)
+    #         db.session.commit()
 
-            message = f"Resíduos deletados com sucesso"
-            logging.debug(message)
+    #         message = f"Resíduos deletados com sucesso"
+    #         logging.debug(message)
     
-        except IntegrityError as error:
-            message = f"Error delete residuos: {error}"
-            logging.warning(message)
-            abort(
-                400,
-                message="Erro ao deletar resíduos.",
-            )
+    #     except IntegrityError as error:
+    #         message = f"Error delete residuos: {error}"
+    #         logging.warning(message)
+    #         abort(
+    #             400,
+    #             message="Erro ao deletar resíduos.",
+    #         )
             
-        except SQLAlchemyError as error:
-            message = f"Error delete residuo: {error}"
-            logging.warning(message)
-            abort(500, message="Server Error.")
+    #     except SQLAlchemyError as error:
+    #         message = f"Error delete residuo: {error}"
+    #         logging.warning(message)
+    #         abort(500, message="Server Error.")
 
-        return {"message": "Todos registros deletados."}
+    #     return {"message": "Todos registros deletados."}
     

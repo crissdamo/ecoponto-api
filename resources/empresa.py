@@ -165,38 +165,38 @@ class Empresas(MethodView):
 
         return empresa
     
-    @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
-    def delete(self):
+    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
+    # def delete(self):
     
-        empresas = EmpresaModel.query.all()
-        aceita_termo = TermoAceiteModel.query.all()
+    #     empresas = EmpresaModel.query.all()
+    #     aceita_termo = TermoAceiteModel.query.all()
 
-        # Deletar
-        try:
+    #     # Deletar
+    #     try:
 
-            for aceite in aceita_termo:
-                db.session.delete(aceite)
+    #         for aceite in aceita_termo:
+    #             db.session.delete(aceite)
 
-            for empresa in empresas:
-                db.session.delete(empresa)
+    #         for empresa in empresas:
+    #             db.session.delete(empresa)
                 
-            db.session.commit()
+    #         db.session.commit()
 
-            message = f"Empresas deletadas com sucesso"
-            logging.debug(message)
+    #         message = f"Empresas deletadas com sucesso"
+    #         logging.debug(message)
     
-        except IntegrityError as error:
-            message = f"Error delete empresas: {error}"
-            logging.warning(message)
-            abort(
-                400,
-                message="Erro ao deletar empresas.",
-            )
+    #     except IntegrityError as error:
+    #         message = f"Error delete empresas: {error}"
+    #         logging.warning(message)
+    #         abort(
+    #             400,
+    #             message="Erro ao deletar empresas.",
+    #         )
             
-        except SQLAlchemyError as error:
-            message = f"Error delete empresas: {error}"
-            logging.warning(message)
-            abort(500, message="Server Error.")
+    #     except SQLAlchemyError as error:
+    #         message = f"Error delete empresas: {error}"
+    #         logging.warning(message)
+    #         abort(500, message="Server Error.")
 
-        return {"message": "Todos registros deletados."}
+    #     return {"message": "Todos registros deletados."}
     
