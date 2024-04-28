@@ -76,6 +76,7 @@ class Ecopontos(MethodView):
 
         localizacao_obj = None
         if localizacao:
+            localizacao = localizacao[0]
             latitude=localizacao['latitude']
             longitude=localizacao['longitude']
             url_localizacao = f"https://maps.google.com/?q={latitude},{longitude}"

@@ -1,6 +1,11 @@
 from marshmallow import Schema, fields, validate
 
 
+class ItemTermoSchema(Schema):
+    id_termo = fields.Int(required=True)
+    aceite = fields.Bool(missing=False)
+
+
 class PlainTermoSchema(Schema):
     id = fields.Int(dump_only=True)
     titulo = fields.Str(required=True)

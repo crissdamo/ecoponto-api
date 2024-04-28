@@ -2,32 +2,10 @@ from marshmallow import Schema, fields, validate
 from models.enums.dia_semana import DiasSemanaEnum
 from models.enums.situacao_ecoponto import SituacaoEnum
 from schemas.categoria_residuo import ItemResiduoSchema, PlainResiduoSchema
+from schemas.termo import ItemTermoSchema
 
 
-class ItemTermoSchema(Schema):
-    id_termo = fields.Int(required=True)
-    aceite = fields.Bool(missing=False)
-
-
-class PlainEmpresaSchema(Schema):
-    id = fields.Int(dump_only=True)
-    nome_fantasia = fields.Str(required=True)
-    razao_social = fields.Str(required=False)
-    cnpj = fields.Str(required=True)
-    ramo_atuacao = fields.Str(required=False)
-    telefone = fields.Str(required=True)
-    rede_social = fields.Str(required=False)
-    participacao_outros_projetos = fields.Bool(missing=False) 
-    descricao_outros_projetos = fields.Str(required=False)
-    nome_contato_responsavel = fields.Str(required=True)
-    
-    email = fields.Str(required=True)
-    senha = fields.Str(required=True, load_only=True)
-
-    aceite_termos = fields.List(fields.Nested(ItemTermoSchema), required=False)
-
-
-class EcopontoLocalizacaoSchema(Schema):
+class PlainEcopontoLocalizacaoSchema(Schema):
     id = fields.Int(dump_only=True)
     rua = fields.Str(required=True)
     numero = fields.Str(required=True)
@@ -48,6 +26,24 @@ class PainEcopontoDiaFuncionamento(Schema):
     hora_final = fields.Time(format='%H:%M', required=True)
 
 
+class PlainEmpresaSchema(Schema):
+    id = fields.Int(dump_only=True)
+    nome_fantasia = fields.Str(required=True)
+    razao_social = fields.Str(required=False)
+    cnpj = fields.Str(required=True)
+    ramo_atuacao = fields.Str(required=False)
+    telefone = fields.Str(required=True)
+    rede_social = fields.Str(required=False)
+    participacao_outros_projetos = fields.Bool(missing=False) 
+    descricao_outros_projetos = fields.Str(required=False)
+    nome_contato_responsavel = fields.Str(required=True)
+    
+    email = fields.Str(required=True)
+    senha = fields.Str(required=True, load_only=True)
+
+    aceite_termos = fields.List(fields.Nested(ItemTermoSchema), required=False)
+
+
 class PlainEcopontoSchema(Schema):
     id = fields.Int(dump_only=True)
     empresa_id = fields.Int(required=True)
@@ -55,13 +51,13 @@ class PlainEcopontoSchema(Schema):
     nome = fields.Str(required=True)
     ativo = fields.Boolean(missing=True)
     aberto_publico = fields.Boolean(missing=True)
-    data_inicio = fields.Date(format='2014-12-22T03:12:58.019077+00:00', required=False)
-    data_final = fields.Date(format='2014-12-22T03:12:58.019077+00:00', required=False)
+    data_inicio = fields.Date(format='2024-01-01T00:00:00.019077+00:00', required=False)
+    data_final = fields.Date(format='2050-12-31T23:59:59.019077+00:00', required=False)
 
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=False)
     
     residuos = fields.List(fields.Nested(ItemResiduoSchema), required=False)
-    localizacao = fields.Nested(EcopontoLocalizacaoSchema, required=True)
+    localizacao = fields.List(fields.Nested(PlainEcopontoLocalizacaoSchema), required=False)
 
 
 class EcopontoFuncionamentoSchema(Schema):
@@ -80,6 +76,7 @@ class EcopontoResiduoSchema(Schema):
 class EcopontoSchema(PlainEcopontoSchema):
     empresa = fields.Nested(PlainEmpresaSchema(), dump_only=True)
     residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
+    localizacao = fields.List(fields.Nested(PlainEcopontoLocalizacaoSchema()), dump_only=True)
 
 
 class EmpresaSchema(PlainEmpresaSchema):

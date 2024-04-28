@@ -59,16 +59,18 @@
       {
         "empresa_id": 16,
         "nome": "Brinox",
-        "localizacao": {
-          "rua": "Rod RSC-453",
-          "numero": "32503",
-          "bairro": "Nossa Sra. da Saúde",
-          "complemento": "Km 80",
-          "cep": "95032898",
-          "cidade": "Caxias do Sul",
-          "estado": "Rio Grande do Sul",
-          "latitude": "-29.13374",
-          "longitude": "-51.19270"
-        }
-      }
+        "localizacao": [
+          {
+            "rua": "Rod RSC-453",
+            "numero": "32503",
+            "bairro": "Nossa Sra. da Saúde",
+            "complemento": "Km 80",
+            "cep": "95032898",
+            "cidade": "Caxias do Sul",
+            "estado": "Rio Grande do Sul",
+            "latitude": "-29.13374",
+            "longitude": "-51.19270"
+          }
+      ]
+    }
 ]
