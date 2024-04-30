@@ -11,7 +11,7 @@ from models.empresa import EmpresaModel
 from models.enums.situacao_ecoponto import SituacaoEnum
 from models.localizacao import LocalizacaoModel
 from models.residuo import ResiduoModel
-from schemas.empresa_ecoponto import EcopontoFuncionamentoSchema, EcopontoResiduoSchema, EcopontoSchema, PlainEcopontoSchema
+from schemas.empresa_ecoponto import EcopontoFuncionamentoSchema, EcopontoResiduoSchema, EcopontoSchema, PlainEcopontoIDEmpresaSchema
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
@@ -26,8 +26,8 @@ class Ecopontos(MethodView):
         return ecoponto
 
 
-    @blp.arguments(PlainEcopontoSchema)
-    @blp.response(201, PlainEcopontoSchema)
+    @blp.arguments(PlainEcopontoIDEmpresaSchema)
+    @blp.response(201, PlainEcopontoIDEmpresaSchema)
     def post(self, ecoponto_data):
 
 
@@ -136,9 +136,8 @@ class Ecopontos(MethodView):
         return ecoponto_data
 
 
-    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
     # def delete(self):
-    
+
     #     ecopontos = EcopontoModel.query.all()
     #     funcionamentos = DiaFuncionamentoModel.query.all()
     #     localizacoes = LocalizacaoModel.query.all()
@@ -178,7 +177,6 @@ class Ecopontos(MethodView):
 
 @blp.route("/ecoponto/funcionamento")
 class EcopontoFuncionamento(MethodView):
-
 
     @blp.arguments(EcopontoFuncionamentoSchema)
     @blp.response(201, EcopontoFuncionamentoSchema)

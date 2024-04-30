@@ -5,6 +5,7 @@ from schemas.categoria_residuo import ItemResiduoSchema, PlainResiduoSchema
 from schemas.termo import ItemTermoSchema
 
 
+# Localizacao
 class PlainEcopontoLocalizacaoSchema(Schema):
     id = fields.Int(dump_only=True)
     rua = fields.Str(required=True)
@@ -19,6 +20,7 @@ class PlainEcopontoLocalizacaoSchema(Schema):
     url_localizacao = fields.Str(required=False, dump_only=True)    
 
 
+# Dia funcionamento
 class PainEcopontoDiaFuncionamento(Schema):
     id = fields.Int(dump_only=True)
     dia_semana = fields.Str(validate=validate.OneOf([s.value for s in DiasSemanaEnum]))
@@ -26,6 +28,7 @@ class PainEcopontoDiaFuncionamento(Schema):
     hora_final = fields.Time(format='%H:%M', required=True)
 
 
+# Empresa (está implicito o usuário e o perfil do usuário)
 class PlainEmpresaSchema(Schema):
     id = fields.Int(dump_only=True)
     nome_fantasia = fields.Str(required=True)
@@ -44,9 +47,9 @@ class PlainEmpresaSchema(Schema):
     aceite_termos = fields.List(fields.Nested(ItemTermoSchema), required=False)
 
 
+# Ecoponto + localizacao + dia funcionamento + residuo - empresa_id
 class PlainEcopontoSchema(Schema):
     id = fields.Int(dump_only=True)
-    empresa_id = fields.Int(required=True)
     situacao = fields.Str(validate=validate.OneOf([s.value for s in SituacaoEnum]), dump_only=True)
     nome = fields.Str(required=True)
     ativo = fields.Boolean(missing=True)
@@ -54,52 +57,81 @@ class PlainEcopontoSchema(Schema):
     data_inicio = fields.Date(format='2024-01-01T00:00:00.019077+00:00', required=False)
     data_final = fields.Date(format='2050-12-31T23:59:59.019077+00:00', required=False)
     localizacao = fields.List(fields.Nested(PlainEcopontoLocalizacaoSchema), required=True)
-
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=False)
     residuo = fields.List(fields.Nested(ItemResiduoSchema), required=False)
 
 
+# Ecoponto + localizacao + dia funcionamento + residuo + empresa_id
+class PlainEcopontoIDEmpresaSchema(PlainEcopontoSchema):
+    empresa_id = fields.Int(required=True)
+   
+
+# Ecoponto + dia funcionamento
 class EcopontoFuncionamentoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=True)
-    ecoponto = fields.Nested(PlainEcopontoSchema(), dump_only=True)
+    ecoponto = fields.Nested(PlainEcopontoIDEmpresaSchema(), dump_only=True)
     
 
+# Ecoponto + resíduo
 class EcopontoResiduoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
     # descricao_outros_projetos = fields.Str(required=True)
     residuo = fields.List(fields.Nested(PlainResiduoSchema), required=True)
-    ecoponto = fields.Nested(PlainEcopontoSchema(), dump_only=True)
+    ecoponto = fields.Nested(PlainEcopontoIDEmpresaSchema(), dump_only=True)
     
 
-class EcopontoSchema(PlainEcopontoSchema):
-    residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
+# Ecoponto + localizacao + dia funcionamento + residuo
+class EcopontoSchema(PlainEcopontoIDEmpresaSchema):
     localizacao = fields.List(fields.Nested(PlainEcopontoLocalizacaoSchema()), dump_only=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), dump_only=True)
+    residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
     
 
-class EcopontoEmpresaSchema(PlainEcopontoSchema):
+# Ecoponto + empresa + localizacao + dia funcionamento + residuo
+class EcopontoEmpresaSchema(PlainEcopontoIDEmpresaSchema):
     empresa = fields.Nested(PlainEmpresaSchema(), dump_only=True)
-    residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
     localizacao = fields.List(fields.Nested(PlainEcopontoLocalizacaoSchema()), dump_only=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), dump_only=True)
+    residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
 
-
+# Empresa + ecoponto
 class EmpresaSchema(PlainEmpresaSchema):
     ecopontos = fields.List(fields.Nested(EcopontoSchema()), dump_only=True)
 
 
-# class EmpresaUpdateSchema(Schema):
-#     nome_fantasia  = fields.Str()
-#     razao_social = fields.Str()
-#     cnpj = fields.Str()
-#     ramo_atuacao = fields.Str()
-#     telefone = fields.Str()
-#     rede_social = fields.Str()
-#     participacao_outros_projetos = fields.Boolean() 
-#     descricao_outros_projetos = fields.Str()
-#     nome_contato_responsavel = fields.Str()
-#     email = fields.Str()
+# empresa: classe com a representação padronizada de saída
+class RetornoEmpresaSchema(Schema):
+    code = fields.Str(default='200', dump_only=True)
+    status = fields.Str(default='OK', dump_only=True)
+    message = fields.Str( dump_only=True)
+    value = fields.Nested(EmpresaSchema())
+
+
+# empresa lista: classe com a representação padronizada de saída
+class RetornoListaEmpresaSchema(Schema):
+    code = fields.Str(dump_only=True)
+    status = fields.Str(dump_only=True)
+    message = fields.Str( dump_only=True)
+    Values = fields.List(fields.Nested(EmpresaSchema()), dump_only=True)
+
+
+
+class EmpresaEcopontoSchema(PlainEmpresaSchema):
+    ecoponto = fields.Nested(PlainEcopontoSchema, required=True)
+
+
+class EmpresaUpdateSchema(Schema):
+    nome_fantasia  = fields.Str()
+    razao_social = fields.Str()
+    cnpj = fields.Str()
+    ramo_atuacao = fields.Str()
+    telefone = fields.Str()
+    rede_social = fields.Str()
+    participacao_outros_projetos = fields.Boolean() 
+    descricao_outros_projetos = fields.Str()
+    nome_contato_responsavel = fields.Str()
+    email = fields.Str()
 
 
 

@@ -1,0 +1,69 @@
+// POST: empresa/ecoponto
+
+{
+    "nome_fantasia": "Bem Natural",
+    "razao_social": "Bem Natural Comercio de Alimentos LTDA",
+    "cnpj": "36487069000139",
+    "telefone": "54996039247",
+    "nome_contato_responsavel": "Mariana Giacomelli",
+    "email": "mariana.giacomelli@hotmail.com",
+    "senha": "123456",
+    "ecoponto": {
+        "nome": "Bem Natural",
+        "localizacao": [
+          {
+            "rua": "Rua Sagitarius",
+            "numero": "664",
+            "bairro": "Cruzeiro",
+            "cep": "95074360",
+            "cidade": "Caxias do Sul",
+            "estado": "Rio Grande do Sul",
+            "latitude": "-29.17110",
+            "longitude": "-51.14016"
+          }
+      ],
+      "dia_funcionamento": [
+        {
+            "dia_semana": "ter",
+            "hora_inicial": "09:00",
+            "hora_final": "11:30"
+          },
+                    {
+            "dia_semana": "ter",
+            "hora_inicial": "14:00",
+            "hora_final": "18:00"
+          },
+          {
+            "dia_semana": "qua",
+            "hora_inicial": "09:00",
+            "hora_final": "11:30"
+          },
+                    {
+            "dia_semana": "qua",
+            "hora_inicial": "14:00",
+            "hora_final": "18:00"
+          },
+          {
+            "dia_semana": "qui",
+            "hora_inicial": "09:00",
+            "hora_final": "11:30"
+          },
+                    {
+            "dia_semana": "qui",
+            "hora_inicial": "14:00",
+            "hora_final": "18:00"
+          }
+      ],
+      "residuo": [
+        {
+            "id_residuo": 3
+        },
+        {
+            "id_residuo": 4
+        },
+        {
+            "id_residuo": 5
+        }
+      ]
+    }
+}
