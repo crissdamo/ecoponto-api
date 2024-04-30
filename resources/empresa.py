@@ -14,7 +14,10 @@ from models.perfil_usuario import PerfilUsuarioModel
 from models.residuo import ResiduoModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
-from schemas.empresa_ecoponto import EmpresaEcopontoSchema, EmpresaSchema, EmpresaUpdateSchema, PlainEmpresaSchema, RetornoEmpresaSchema, RetornoListaEmpresaSchema
+from schemas.empresa_ecoponto import (
+    EmpresaGetSchema, EmpresaSchema, PlainEmpresaSchema, 
+    RetornoEmpresaGetSchema, RetornoEmpresaSchema, 
+    RetornoListaEmpresaSchema, RetornoPlainEmpresaSchema)
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from extensions.database import db
 
@@ -31,10 +34,10 @@ blp = Blueprint("Empresas", "empresas", description="Operations on empresas")
 @blp.route("/empresa/<int:empresa_id>")
 class Empresa(MethodView):
 
-    @blp.response(200, RetornoEmpresaSchema)
+    @blp.response(200, RetornoEmpresaGetSchema)
     def get(self, empresa_id):
         empresa = EmpresaModel().query.get_or_404(empresa_id, )
-        empresa_schema = EmpresaSchema()
+        empresa_schema = EmpresaGetSchema()
         result = empresa_schema.dump(empresa)
         context = {
             "code": 200,
@@ -123,7 +126,7 @@ class Empresas(MethodView):
         result_lista = []
         empresas = EmpresaModel().query.all()
         for empresa in empresas:
-            empresa_schema = EmpresaSchema()
+            empresa_schema = EmpresaGetSchema()
             result = empresa_schema.dump(empresa)
             result_lista.append(result)
 
@@ -139,7 +142,7 @@ class Empresas(MethodView):
 
     @blp.arguments(PlainEmpresaSchema, 
         description="Cria um novo registro no banco de dados.")
-    @blp.response(201, RetornoEmpresaSchema)
+    @blp.response(201, RetornoPlainEmpresaSchema)
     def post(self, empresa_data):
 
         # Dados recebidos:
@@ -307,10 +310,11 @@ class Empresas(MethodView):
 @blp.route("/empresa/ecoponto")
 class Empresas(MethodView):
 
-    @blp.arguments(EmpresaEcopontoSchema, 
+    @blp.arguments(EmpresaSchema, 
         description="Super rota: cria um novo registro no banco de dados para empresa e ecoponto e todas as suas dependências.")
     @blp.response(201, RetornoEmpresaSchema)
     def post(self, empresa_data):
+
 
         # Fase 1: Dados Empresa / Usuário / Perfil Usuário:
         email = empresa_data['email']
@@ -395,68 +399,74 @@ class Empresas(MethodView):
 
 
         # Fase 2: Dados Ecoponto / Localização / dia funcionamento / residuos
+        ecoponto = None
+        ecoponto_data=empresa_data.get('ecopontos')
 
-        ecoponto_data=empresa_data.get('ecoponto')
-        nome = ecoponto_data['nome']
-        ativo = ecoponto_data.get('ativo')
-        aberto_publico = ecoponto_data.get('aberto_publico')
-        data_inicio = ecoponto_data.get('data_inicio')
-        data_final = ecoponto_data.get('data_final')
-        localizacao = ecoponto_data.get('localizacao')
-        dias_funcionamento = ecoponto_data.get('dia_funcionamento')
+        if ecoponto_data:
+            if len(ecoponto_data) > 1:
+                abort(409, message="Enviar apenas um ecoponto por vez")
+            
+            ecoponto_data = ecoponto_data[0]
+            nome = ecoponto_data['nome']
+            ativo = ecoponto_data.get('ativo')
+            aberto_publico = ecoponto_data.get('aberto_publico')
+            data_inicio = ecoponto_data.get('data_inicio')
+            data_final = ecoponto_data.get('data_final')
+            localizacao = ecoponto_data.get('localizacao')
+            dias_funcionamento = ecoponto_data.get('dia_funcionamento')
 
-        residuos = ecoponto_data.get('residuo')
-        
-        dias_funcionamento_list = []
+            residuos = ecoponto_data.get('residuo')
+            
+            dias_funcionamento_list = []
 
-        
-        # Cria objetos:
+            
+            # Cria objetos:
 
-        ecoponto = EcopontoModel(
-            nome=nome,
-            ativo=ativo,
-            aberto_publico=aberto_publico,
-            data_inicio=data_inicio,
-            data_final=data_final,
-            situacao=SituacaoEnum.em_analise,
-            empresa=empresa
-        )
+            ecoponto = EcopontoModel(
+                nome=nome,
+                ativo=ativo,
+                aberto_publico=aberto_publico,
+                data_inicio=data_inicio,
+                data_final=data_final,
+                situacao=SituacaoEnum.em_analise,
+                empresa=empresa
+            )
 
-        if dias_funcionamento:
-            for funcionamento in dias_funcionamento:
-                
-                dia_semana = funcionamento.get('dia_semana')
-                hora_inicial = funcionamento.get('hora_inicial')
-                hora_final = funcionamento.get('hora_final')
+            if dias_funcionamento:
+                for funcionamento in dias_funcionamento:
+                    
+                    dia_semana = funcionamento.get('dia_semana')
+                    hora_inicial = funcionamento.get('hora_inicial')
+                    hora_final = funcionamento.get('hora_final')
 
-                dia_funcionamento_obj = DiaFuncionamentoModel(
-                    dia_semana=DiasSemanaEnum[dia_semana],
-                    hora_inicial=hora_inicial,
-                    hora_final=hora_final,
+                    dia_funcionamento_obj = DiaFuncionamentoModel(
+                        dia_semana=DiasSemanaEnum[dia_semana],
+                        hora_inicial=hora_inicial,
+                        hora_final=hora_final,
+                        ecoponto=ecoponto
+                    )
+                    dias_funcionamento_list.append(dia_funcionamento_obj)
+
+            localizacao_obj = None
+            if localizacao:
+                localizacao = localizacao[0]
+                latitude=localizacao['latitude']
+                longitude=localizacao['longitude']
+                url_localizacao = f"https://maps.google.com/?q={latitude},{longitude}"
+
+                localizacao_obj = LocalizacaoModel(
+                    rua=localizacao['rua'],
+                    numero=localizacao['numero'],
+                    bairro=localizacao['bairro'],
+                    cep=localizacao['cep'],
+                    cidade=localizacao['cidade'],
+                    estado=localizacao['estado'],
+                    complemento=localizacao.get('complemento'),
+                    latitude=latitude,
+                    longitude=longitude,
+                    url_localizacao=url_localizacao,
                     ecoponto=ecoponto
                 )
-                dias_funcionamento_list.append(dia_funcionamento_obj)
-
-        localizacao_obj = None
-        if localizacao:
-            localizacao = localizacao[0]
-            latitude=localizacao['latitude']
-            longitude=localizacao['longitude']
-            url_localizacao = f"https://maps.google.com/?q={latitude},{longitude}"
-
-            localizacao_obj = LocalizacaoModel(
-                rua=localizacao['rua'],
-                numero=localizacao['numero'],
-                bairro=localizacao['bairro'],
-                cep=localizacao['cep'],
-                cidade=localizacao['cidade'],
-                estado=localizacao['estado'],
-                complemento=localizacao.get('complemento'),
-                latitude=latitude,
-                longitude=longitude,
-                url_localizacao=url_localizacao,
-                ecoponto=ecoponto
-            )
 
         # Salva em BD
         try:
@@ -467,23 +477,24 @@ class Empresas(MethodView):
             for aceite in termos_list:
                  db.session.add(aceite)
 
-            db.session.add(ecoponto)
-            if localizacao_obj:
-                db.session.add(localizacao_obj)
-           
-            for funcionamento in dias_funcionamento_list:
-                 db.session.add(funcionamento)
+            if ecoponto:
+                db.session.add(ecoponto)
+                if localizacao_obj:
+                    db.session.add(localizacao_obj)
+            
+                for funcionamento in dias_funcionamento_list:
+                    db.session.add(funcionamento)
 
-            if residuos:
-                for residuo in residuos:
-                    id_residuo = residuo.get('id_residuo')
-                    residuo_object = ResiduoModel().query.get_or_404(id_residuo)
-                    
-                    categoria_residuo = EcopontoResiduoModel(
-                        residuo_id=residuo_object.id,
-                        ecoponto_id=ecoponto.id
-                    )
-                    db.session.add(categoria_residuo)
+                if residuos:
+                    for residuo in residuos:
+                        id_residuo = residuo.get('id_residuo')
+                        residuo_object = ResiduoModel().query.get_or_404(id_residuo)
+                        
+                        categoria_residuo = EcopontoResiduoModel(
+                            residuo_id=residuo_object.id,
+                            ecoponto_id=ecoponto.id
+                        )
+                        db.session.add(categoria_residuo)
 
             db.session.commit()
 

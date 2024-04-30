@@ -1,4 +1,5 @@
 import logging.handlers
+from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from models.dia_funcionamento import DiaFuncionamentoModel
@@ -11,7 +12,16 @@ from models.empresa import EmpresaModel
 from models.enums.situacao_ecoponto import SituacaoEnum
 from models.localizacao import LocalizacaoModel
 from models.residuo import ResiduoModel
-from schemas.empresa_ecoponto import EcopontoFuncionamentoSchema, EcopontoResiduoSchema, EcopontoSchema, PlainEcopontoIDEmpresaSchema
+from schemas.empresa_ecoponto import (
+    EcopontoFuncionamentoSchema,
+    EcopontoGetSchema,
+    EcopontoLocalizacaoSchema, 
+    EcopontoResiduoSchema, 
+    EcopontoSchema,  
+    RetornoEcopontoFuncionamentoSchema,
+    RetornoEcopontoLocalizacaoSchema,
+    RetornoEcopontoResiduoSchema,  
+    RetornoListaEcopontoSchema)
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
@@ -19,15 +29,27 @@ blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 @blp.route("/ecoponto")
 class Ecopontos(MethodView):
 
-    @blp.response(200, EcopontoSchema(many=True))
+    @blp.response(200, RetornoListaEcopontoSchema(many=True))
     def get(self):
-    
-        ecoponto = EcopontoModel().query.all()
-        return ecoponto
+        result_lista = []
+        ecopontos = EcopontoModel().query.all()
+        for ecoponto in ecopontos:
+            ecoponto_schema = EcopontoGetSchema()
+            result = ecoponto_schema.dump(ecoponto)
+            result_lista.append(result)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result_lista
+        }
+        
+        return jsonify(context)
 
 
-    @blp.arguments(PlainEcopontoIDEmpresaSchema)
-    @blp.response(201, PlainEcopontoIDEmpresaSchema)
+    @blp.arguments(EcopontoLocalizacaoSchema)
+    @blp.response(201, RetornoEcopontoLocalizacaoSchema)
     def post(self, ecoponto_data):
 
 
@@ -133,7 +155,16 @@ class Ecopontos(MethodView):
             logging.warning(message)
             abort(500, message="Server Error.")
 
-        return ecoponto_data
+        ecoponto_schema = EcopontoLocalizacaoSchema()
+        result = ecoponto_schema.dump(ecoponto)
+        context = {
+            "code": 201,
+            "status": "Created",
+            "message": "",
+            "value": result
+        }
+
+        return jsonify(context)
 
 
     # def delete(self):
@@ -179,7 +210,7 @@ class Ecopontos(MethodView):
 class EcopontoFuncionamento(MethodView):
 
     @blp.arguments(EcopontoFuncionamentoSchema)
-    @blp.response(201, EcopontoFuncionamentoSchema)
+    @blp.response(201, RetornoEcopontoFuncionamentoSchema)
     def post(self, ecoponto_data):
 
         # Dados recebidos:
@@ -234,14 +265,23 @@ class EcopontoFuncionamento(MethodView):
             logging.warning(message)
             abort(500, message="Server Error.")
 
-        return ecoponto_data
+        ecoponto_schema = EcopontoFuncionamentoSchema()
+        result = ecoponto_schema.dump(ecoponto)
+        context = {
+            "code": 201,
+            "status": "Created",
+            "message": "",
+            "value": result
+        }
+
+        return jsonify(context)
 
 
 @blp.route("/ecoponto/residuo")
 class EcopontoResiduo(MethodView):
 
     @blp.arguments(EcopontoResiduoSchema)
-    @blp.response(201, EcopontoResiduoSchema)
+    @blp.response(201, RetornoEcopontoResiduoSchema)
     def post(self, ecoponto_data):
 
         # Dados recebidos:
@@ -295,5 +335,14 @@ class EcopontoResiduo(MethodView):
             logging.warning(message)
             abort(500, message="Server Error.")
 
-        return ecoponto_data
+        ecoponto_schema = EcopontoResiduoSchema()
+        result = ecoponto_schema.dump(ecoponto)
+        context = {
+            "code": 201,
+            "status": "Created",
+            "message": "",
+            "value": result
+        }
+
+        return jsonify(context)
 

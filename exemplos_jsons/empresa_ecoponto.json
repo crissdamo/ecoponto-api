@@ -1,26 +1,35 @@
 // POST: empresa/ecoponto
 
 {
-    "nome_fantasia": "Bem Natural",
-    "razao_social": "Bem Natural Comercio de Alimentos LTDA",
-    "cnpj": "36487069000139",
-    "telefone": "54996039247",
-    "nome_contato_responsavel": "Mariana Giacomelli",
-    "email": "mariana.giacomelli@hotmail.com",
-    "senha": "123456",
-    "ecoponto": {
-        "nome": "Bem Natural",
-        "localizacao": [
-          {
-            "rua": "Rua Sagitarius",
-            "numero": "664",
-            "bairro": "Cruzeiro",
-            "cep": "95074360",
-            "cidade": "Caxias do Sul",
-            "estado": "Rio Grande do Sul",
-            "latitude": "-29.17110",
-            "longitude": "-51.14016"
-          }
+	"nome_fantasia": "Bem Natural",
+	"razao_social": "Bem Natural Comercio de Alimentos LTDA",
+	"cnpj": "36487069000139",
+	"telefone": "54996039247",
+	"nome_contato_responsavel": "Mariana Giacomelli",
+	"email": "mariana.giacomelli@hotmail.com",
+	"senha": "123456",
+  "aceite_termos": [
+    {
+      "id_termo": 1,
+      "aceite": true
+    }
+  ],
+  "ecopontos": [
+    {
+      "nome": "Bem Natural",
+      "ativo": true,
+      "aberto_publico": true,
+      "localizacao": [
+        {
+          "rua": "Rua Sagitarius",
+          "numero": "664",
+          "bairro": "Cruzeiro",
+          "cep": "95074360",
+          "cidade": "Caxias do Sul",
+          "estado": "Rio Grande do Sul",
+          "latitude": "-29.17110",
+          "longitude": "-51.14016"
+        }
       ],
       "dia_funcionamento": [
         {
@@ -66,4 +75,5 @@
         }
       ]
     }
+  ]
 }
