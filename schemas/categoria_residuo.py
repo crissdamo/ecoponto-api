@@ -6,7 +6,7 @@ class ItemCategoriaSchema(Schema):
 
 
 class ItemResiduoSchema(Schema):
-    id_residuo = fields.Int(required=True)
+    id = fields.Int(required=True)
 
 
 class PlainCategoriaSchema(Schema):

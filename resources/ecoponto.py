@@ -128,7 +128,7 @@ class Ecopontos(MethodView):
 
             if residuos:
                 for residuo in residuos:
-                    id_residuo = residuo.get('id_residuo')
+                    id_residuo = residuo.get('id')
                     residuo_object = ResiduoModel().query.get_or_404(id_residuo)
                     
                     categoria_residuo = EcopontoResiduoModel(
@@ -308,7 +308,7 @@ class EcopontoResiduo(MethodView):
 
             if residuos:
                 for residuo in residuos:
-                    id_residuo = residuo.get('id_residuo')
+                    id_residuo = residuo.get('id')
                     residuo_object = ResiduoModel().query.get_or_404(id_residuo)
                     
                     categoria_residuo = EcopontoResiduoModel(

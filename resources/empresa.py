@@ -102,7 +102,7 @@ class Empresa(MethodView):
     #         empresa.participacao_outros_projetos=empresa_data.get('participacao_outros_projetos')
     #         empresa.descricao_outros_projetos=empresa_data.get('descricao_outros_projetos')
 
-    #         aceite_termos=empresa_data.get('aceite_termos')
+    #         aceite_termo=empresa_data.get('aceite_termo')
 
 
     #     else:
@@ -158,7 +158,7 @@ class Empresas(MethodView):
         participacao_outros_projetos=empresa_data.get('participacao_outros_projetos')
         descricao_outros_projetos=empresa_data.get('descricao_outros_projetos')
 
-        aceite_termos=empresa_data.get('aceite_termos')
+        aceite_termo=empresa_data.get('aceite_termo')
 
         termos_list = []
 
@@ -210,11 +210,11 @@ class Empresas(MethodView):
             usuario=usuario
         )
 
-        if aceite_termos:
-            for termo in aceite_termos:
+        if aceite_termo:
+            for termo in aceite_termo:
                 
                 aceite=termo.get('aceite')
-                id_termo=termo.get('id_termo')
+                id_termo=termo.get('id')
 
                 termo_object = TermoModel().query.get_or_404(id_termo)
                 
@@ -329,7 +329,7 @@ class Empresas(MethodView):
         participacao_outros_projetos=empresa_data.get('participacao_outros_projetos')
         descricao_outros_projetos=empresa_data.get('descricao_outros_projetos')
 
-        aceite_termos=empresa_data.get('aceite_termos')
+        aceite_termo=empresa_data.get('aceite_termo')
 
         termos_list = []
 
@@ -381,11 +381,11 @@ class Empresas(MethodView):
             usuario=usuario
         )
 
-        if aceite_termos:
-            for termo in aceite_termos:
+        if aceite_termo:
+            for termo in aceite_termo:
                 
                 aceite=termo.get('aceite')
-                id_termo=termo.get('id_termo')
+                id_termo=termo.get('id')
 
                 termo_object = TermoModel().query.get_or_404(id_termo)
                 
@@ -487,7 +487,7 @@ class Empresas(MethodView):
 
                 if residuos:
                     for residuo in residuos:
-                        id_residuo = residuo.get('id_residuo')
+                        id_residuo = residuo.get('id')
                         residuo_object = ResiduoModel().query.get_or_404(id_residuo)
                         
                         categoria_residuo = EcopontoResiduoModel(

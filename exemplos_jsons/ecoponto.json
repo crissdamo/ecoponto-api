@@ -1,3 +1,31 @@
+// POST: empresa
+
+{
+	"code": 201,
+	"message": "",
+	"status": "Created",
+	"value": {
+		"aceite_termo": [
+			{
+				"aceite": true,
+				"id": 11
+			}
+		],
+		"cnpj": "30179748000164",
+		"descricao_outros_projetos": null,
+		"ecopontos": [],
+		"email": "quintaldasalsacaxias@gmail.com",
+		"id": 30,
+		"nome_contato_responsavel": "Pedro Padilha Kessler",
+		"nome_fantasia": "Quintal da Salsa",
+		"participacao_outros_projetos": false,
+		"ramo_atuacao": null,
+		"razao_social": "Quintal da Salsa Gastronomia LTDA",
+		"rede_social": null,
+		"telefone": "5430170736"
+	}
+}
+
 [
     {
         "empresa_id": 12,

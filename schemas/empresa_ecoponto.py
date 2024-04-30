@@ -21,7 +21,7 @@ class PlainEmpresaSchema(Schema):
     email = fields.Str(required=True)
     senha = fields.Str(required=True, load_only=True)
 
-    aceite_termos = fields.List(fields.Nested(ItemTermoSchema), required=False)
+    aceite_termo = fields.List(fields.Nested(ItemTermoSchema), required=False)
 
 
 # Localizacao

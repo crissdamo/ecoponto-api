@@ -8,9 +8,9 @@
 	"nome_contato_responsavel": "Mariana Giacomelli",
 	"email": "mariana.giacomelli@hotmail.com",
 	"senha": "123456",
-  "aceite_termos": [
+  "aceite_termo": [
     {
-      "id_termo": 1,
+      "id": 1,
       "aceite": true
     }
   ],
@@ -65,13 +65,13 @@
       ],
       "residuo": [
         {
-            "id_residuo": 3
+            "id": 3
         },
         {
-            "id_residuo": 4
+            "id": 4
         },
         {
-            "id_residuo": 5
+            "id": 5
         }
       ]
     }

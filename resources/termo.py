@@ -102,7 +102,7 @@ class Termos(MethodView):
 
 #         # Dados recebidos:
         
-#         id_termo = aceite_termo_data['id_termo']
+#         id_termo = aceite_termo_data['id']
 #         id_empresa = aceite_termo_data['id_empresa']
 #         aceite = aceite_termo_data.get('aceite')
 
