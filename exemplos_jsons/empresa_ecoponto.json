@@ -10,7 +10,7 @@
 	"senha": "123456",
   "aceite_termo": [
     {
-      "id_termo": 1,
+      "termo_id": 1,
       "aceite": true
     }
   ],

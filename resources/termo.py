@@ -102,7 +102,7 @@ class Termos(MethodView):
 
 #         # Dados recebidos:
         
-#         id_termo = aceite_termo_data['id']
+#         termo_id = aceite_termo_data['id']
 #         id_empresa = aceite_termo_data['id_empresa']
 #         aceite = aceite_termo_data.get('aceite')
 
@@ -110,7 +110,7 @@ class Termos(MethodView):
 #         # Cria objeto:
 
 #         aceite_termo = TermoAceiteModel(
-#             termo_id=id_termo,
+#             termo_id=termo_id,
 #             empresa_id=id_empresa,
 #             aceite=aceite
 #         )

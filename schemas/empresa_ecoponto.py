@@ -2,10 +2,27 @@ from marshmallow import Schema, fields, validate
 from models.enums.dia_semana import DiasSemanaEnum
 from models.enums.situacao_ecoponto import SituacaoEnum
 from schemas.categoria_residuo import ItemResiduoSchema, PlainResiduoSchema
-from schemas.termo import ItemTermoSchema
+from schemas.termo import AceiteTermoSchema
 
 
 # Empresa (está implicito o usuário e o perfil do usuário)
+class PlainEmpresaUpdateSchema(Schema):
+
+    nome_fantasia = fields.Str(required=False)
+    razao_social = fields.Str(required=False)
+    cnpj = fields.Str(required=False)
+    ramo_atuacao = fields.Str(required=False)
+    telefone = fields.Str(required=False)
+    rede_social = fields.Str(required=False)
+    participacao_outros_projetos = fields.Bool(missing=False) 
+    descricao_outros_projetos = fields.Str(required=False)
+    nome_contato_responsavel = fields.Str(required=False)
+    
+    email = fields.Str(required=False)
+    senha = fields.Str(required=True, load_only=False)
+
+    aceite_termo = fields.List(fields.Nested(AceiteTermoSchema), required=False)
+
 class PlainEmpresaSchema(Schema):
     id = fields.Int(dump_only=True)
     nome_fantasia = fields.Str(required=True)
@@ -21,7 +38,7 @@ class PlainEmpresaSchema(Schema):
     email = fields.Str(required=True)
     senha = fields.Str(required=True, load_only=True)
 
-    aceite_termo = fields.List(fields.Nested(ItemTermoSchema), required=False)
+    aceite_termo = fields.List(fields.Nested(AceiteTermoSchema), required=False)
 
 
 # Localizacao
@@ -65,7 +82,7 @@ class EcopontoSchema(PlainEcopontoSchema):
     residuo = fields.List(fields.Nested(ItemResiduoSchema), required=False)
 
 
-# Ecoponto + localizacao + dia funcionamento + residuo
+# Ecoponto update + localizacao + dia funcionamento + residuo
 class EcopontoGetSchema(PlainEcopontoSchema):
     localizacao = fields.List(fields.Nested(PlainLocalizacaoSchema), required=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=False)
@@ -73,12 +90,16 @@ class EcopontoGetSchema(PlainEcopontoSchema):
 
 
 # Empresa + ecoponto
+class EmpresaUpdateSchema(PlainEmpresaUpdateSchema):
+    ecopontos = fields.List(fields.Nested(EcopontoSchema()))
+
+# Empresa + ecoponto
 class EmpresaSchema(PlainEmpresaSchema):
     ecopontos = fields.List(fields.Nested(EcopontoSchema()))
 
 # Empresa + ecoponto
 class EmpresaGetSchema(PlainEmpresaSchema):
-    ecopontos = fields.List(fields.Nested(EcopontoGetSchema()))
+    ecopontos = fields.List(fields.Nested(EcopontoGetSchema()), required=False )
 
 
 # retorno: classe com a representação padronizada de saída

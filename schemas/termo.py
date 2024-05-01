@@ -3,7 +3,7 @@ from marshmallow import Schema, fields, validate
 
 class ItemTermoSchema(Schema):
     id = fields.Int(dump_only=True)
-    id_termo = fields.Int(required=True)
+    termo_id = fields.Int(required=True)
     aceite = fields.Bool(missing=False)
 
 
@@ -16,6 +16,5 @@ class PlainTermoSchema(Schema):
 
 class AceiteTermoSchema(Schema):
     id = fields.Int(dump_only=True)
-    id_termo = fields.Int(required=True)
-    id_empresa = fields.Int(required=True)
+    termo_id = fields.Int(required=True)
     aceite = fields.Bool(missing=False)

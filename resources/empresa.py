@@ -15,7 +15,7 @@ from models.residuo import ResiduoModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
 from schemas.empresa_ecoponto import (
-    EmpresaGetSchema, EmpresaSchema, PlainEmpresaSchema, 
+    EmpresaGetSchema, EmpresaSchema, EmpresaUpdateSchema, PlainEmpresaSchema, 
     RetornoEmpresaGetSchema, RetornoEmpresaSchema, 
     RetornoListaEmpresaSchema, RetornoPlainEmpresaSchema)
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -84,38 +84,124 @@ class Empresa(MethodView):
 
         return jsonify(context)
     
-    # @blp.arguments(EmpresaUpdateSchema)
-    # @blp.response(200, EmpresaSchema)
-    # def put(self, empresa_data, empresa_id):
+    @blp.arguments(EmpresaUpdateSchema)
+    @blp.response(200, RetornoEmpresaSchema)
+    def put(self, empresa_data, empresa_id):
 
-    #     empresa = EmpresaModel.query.get(empresa_id)
-    #     if empresa:
-    #         empresa.email = empresa_data['email']
-    #         empresa.senha = empresa_data["senha"]
-    #         empresa.nome_contato_responsavel = empresa_data['nome_contato_responsavel']
-    #         empresa.telefone_contato = empresa_data['telefone']
-    #         empresa.nome_fantasia=empresa_data['nome_fantasia']
-    #         empresa.razao_social=empresa_data.get('razao_social')
-    #         empresa.cnpj=empresa_data['cnpj']
-    #         empresa.ramo_atuacao=empresa_data.get('ramo_atuacao')
-    #         empresa.rede_social=empresa_data.get('rede_social')
-    #         empresa.participacao_outros_projetos=empresa_data.get('participacao_outros_projetos')
-    #         empresa.descricao_outros_projetos=empresa_data.get('descricao_outros_projetos')
+        print(empresa_id)
 
-    #         aceite_termo=empresa_data.get('aceite_termo')
-
-
-    #     else:
-    #         item = EmpresaModel(id=empresa_id, **item_data)
+        empresa = EmpresaModel().query.get_or_404(empresa_id)
         
-    #     db.session.add(item)
-    #     db.session.commit()
+        email = empresa_data['email']
+        cnpj=empresa_data['cnpj']
+        telefone_contato = empresa_data['telefone']
+        senha = empresa_data["senha"]
+        nome_contato_responsavel = empresa_data['nome_contato_responsavel']
 
-    #     return item
+        cnpj = apenas_digitos(str(cnpj))
+        telefone_contato = apenas_digitos(str(telefone_contato))
+
+        empresa.email = email
+        empresa.nome_contato_responsavel = nome_contato_responsavel
+        empresa.telefone_contato = telefone_contato
+        empresa.nome_fantasia=empresa_data['nome_fantasia']
+        empresa.razao_social=empresa_data.get('razao_social')
+        empresa.cnpj=cnpj
+        empresa.ramo_atuacao=empresa_data.get('ramo_atuacao')
+        empresa.rede_social=empresa_data.get('rede_social')
+        empresa.participacao_outros_projetos=empresa_data.get('participacao_outros_projetos')
+        empresa.descricao_outros_projetos=empresa_data.get('descricao_outros_projetos')
+
+        aceite_termo=empresa_data.get('aceite_termo')
+        print(aceite_termo)
+
+        termos_list = []
+
+        # validações:
+
+    
+        if not validar_cnpj(cnpj):
+            abort(409, message="CNPJ inválido")
+
+        if  empresa.cnpj != cnpj:
+            if EmpresaModel.query.filter(EmpresaModel.cnpj == cnpj).first():
+                abort(409, message="CNPJ já cadastrado")
+
+        if not validar_email(email):
+            abort(409, message="CNPJ inválido")
+        
+        if not validar_telefone(telefone_contato):
+            abort(409, message="Formato do telefone inválido")
+        
+        # Cria objetos:
+
+        usuario = empresa.usuario
+
+        if usuario.email != email:
+            if UsuarioModel.query.filter(UsuarioModel.email == email).first():
+                abort(409, message="E-mail já cadastrado")
+            usuario.email = email
+        
+        if usuario.senha != pbkdf2_sha256.hash(senha):
+            usuario.senha = pbkdf2_sha256.hash(senha)
+        
+        perfil_usuario = PerfilUsuarioModel.query.filter(PerfilUsuarioModel.usuario == usuario).first()
+        perfil_usuario.nome=nome_contato_responsavel
+        perfil_usuario.telefone=telefone_contato
+        perfil_usuario.email=email
+        
+        if aceite_termo:
+            for termo in aceite_termo:
+                
+                aceite=termo.get('aceite')
+                termo_id=termo.get('termo_id')
+
+                termo_object = TermoModel().query.get_or_404(termo_id)
+                
+                aceite_termo = TermoAceiteModel(
+                    aceite=aceite,
+                    termo=termo_object,
+                    empresa=empresa
+                )
+                termos_list.append(aceite_termo)
 
 
-    #     empresa = EmpresaModel().query.get_or_404(empresa_id)
-    #     raise NotImplementedError("Edição de empresa não está implementada")
+        # Salva em BD
+        try:
+            db.session.add(usuario)
+            db.session.add(perfil_usuario)
+            db.session.add(empresa)
+
+            for aceite in termos_list:
+                db.session.add(aceite)
+
+            db.session.commit()
+
+            message = f"Empresa criada com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error create empresa: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao criar empresa.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error create empresa: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        empresa_schema = EmpresaSchema()
+        result = empresa_schema.dump(empresa)
+        context = {
+            "code": 201,
+            "status": "Created",
+            "message": message,
+            "value": result
+        }
+
+        return jsonify(context)
 
 
 @blp.route("/empresa")
@@ -214,9 +300,9 @@ class Empresas(MethodView):
             for termo in aceite_termo:
                 
                 aceite=termo.get('aceite')
-                id_termo=termo.get('id_termo')
+                termo_id=termo.get('termo_id')
 
-                termo_object = TermoModel().query.get_or_404(id_termo)
+                termo_object = TermoModel().query.get_or_404(termo_id)
                 
                 aceite_termo = TermoAceiteModel(
                     aceite=aceite,
@@ -385,9 +471,9 @@ class Empresas(MethodView):
             for termo in aceite_termo:
                 
                 aceite=termo.get('aceite')
-                id_termo=termo.get('id_termo')
+                termo_id=termo.get('termo_id')
 
-                termo_object = TermoModel().query.get_or_404(id_termo)
+                termo_object = TermoModel().query.get_or_404(termo_id)
                 
                 aceite_termo = TermoAceiteModel(
                     aceite=aceite,
