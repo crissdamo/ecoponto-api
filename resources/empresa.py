@@ -15,7 +15,9 @@ from models.residuo import ResiduoModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
 from schemas.empresa_ecoponto import (
-    EmpresaGetSchema, EmpresaSchema, EmpresaUpdateSchema, PlainEmpresaSchema, 
+    EmpresaGetSchema, EmpresaSchema, 
+    PlainEmpresaSchema, 
+    PlainEmpresaUpdateSchema, 
     RetornoEmpresaGetSchema, RetornoEmpresaSchema, 
     RetornoListaEmpresaSchema, RetornoPlainEmpresaSchema)
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -36,7 +38,7 @@ class Empresa(MethodView):
 
     @blp.response(200, RetornoEmpresaGetSchema)
     def get(self, empresa_id):
-        empresa = EmpresaModel().query.get_or_404(empresa_id, )
+        empresa = EmpresaModel().query.get_or_404(empresa_id)
         empresa_schema = EmpresaGetSchema()
         result = empresa_schema.dump(empresa)
         context = {
@@ -53,11 +55,17 @@ class Empresa(MethodView):
         
         try:
             empresa = EmpresaModel().query.get_or_404(empresa_id)
+            termos_aceite = empresa.aceite_termo.all()
             usuario = empresa.usuario
-            perfil = PerfilUsuarioModel().query.filter(usuario).first()
+            perfil = PerfilUsuarioModel.query.filter(PerfilUsuarioModel.usuario == usuario).first()
+            
+            for aceite in termos_aceite:
+                db.session.delete(aceite)
+
             db.session.delete(empresa)
             db.session.delete(perfil)
             db.session.delete(usuario)
+
             db.session.commit()
 
             message = f"Empresa excluída com sucesso"
@@ -84,11 +92,9 @@ class Empresa(MethodView):
 
         return jsonify(context)
     
-    @blp.arguments(EmpresaUpdateSchema)
-    @blp.response(200, RetornoEmpresaSchema)
+    @blp.arguments(PlainEmpresaUpdateSchema)
+    @blp.response(200, RetornoPlainEmpresaSchema)
     def put(self, empresa_data, empresa_id):
-
-        print(empresa_id)
 
         empresa = EmpresaModel().query.get_or_404(empresa_id)
         
@@ -103,7 +109,7 @@ class Empresa(MethodView):
 
         empresa.email = email
         empresa.nome_contato_responsavel = nome_contato_responsavel
-        empresa.telefone_contato = telefone_contato
+        empresa.telefone = telefone_contato
         empresa.nome_fantasia=empresa_data['nome_fantasia']
         empresa.razao_social=empresa_data.get('razao_social')
         empresa.cnpj=cnpj
@@ -113,7 +119,6 @@ class Empresa(MethodView):
         empresa.descricao_outros_projetos=empresa_data.get('descricao_outros_projetos')
 
         aceite_termo=empresa_data.get('aceite_termo')
-        print(aceite_termo)
 
         termos_list = []
 
@@ -157,12 +162,19 @@ class Empresa(MethodView):
                 termo_id=termo.get('termo_id')
 
                 termo_object = TermoModel().query.get_or_404(termo_id)
+
+                aceite_termo = TermoAceiteModel.query.filter(
+                    TermoAceiteModel.empresa_id == empresa_id,
+                    TermoAceiteModel.termo_id == termo_id,).first()
                 
-                aceite_termo = TermoAceiteModel(
-                    aceite=aceite,
-                    termo=termo_object,
-                    empresa=empresa
-                )
+                if aceite_termo:
+                    aceite_termo.aceite = aceite
+                else:
+                    aceite_termo = TermoAceiteModel(
+                        aceite=aceite,
+                        termo=termo_object,
+                        empresa=empresa
+                    )
                 termos_list.append(aceite_termo)
 
 
@@ -177,7 +189,7 @@ class Empresa(MethodView):
 
             db.session.commit()
 
-            message = f"Empresa criada com sucesso"
+            message = f"Empresa editada com sucesso"
             logging.debug(message)
     
         except IntegrityError as error:
@@ -195,8 +207,8 @@ class Empresa(MethodView):
         empresa_schema = EmpresaSchema()
         result = empresa_schema.dump(empresa)
         context = {
-            "code": 201,
-            "status": "Created",
+            "code": 200,
+            "status": "OK",
             "message": message,
             "value": result
         }
@@ -394,7 +406,7 @@ class Empresas(MethodView):
     
 
 @blp.route("/empresa/ecoponto")
-class Empresas(MethodView):
+class EmpresasEcoponto(MethodView):
 
     @blp.arguments(EmpresaSchema, 
         description="Super rota: cria um novo registro no banco de dados para empresa e ecoponto e todas as suas dependências.")
