@@ -167,43 +167,43 @@ class Ecopontos(MethodView):
         return jsonify(context)
 
 
-    # def delete(self):
+    def delete(self):
 
-    #     ecopontos = EcopontoModel.query.all()
-    #     funcionamentos = DiaFuncionamentoModel.query.all()
-    #     localizacoes = LocalizacaoModel.query.all()
+        ecopontos = EcopontoModel.query.all()
+        funcionamentos = DiaFuncionamentoModel.query.all()
+        localizacoes = LocalizacaoModel.query.all()
 
-    #     # Deletar
-    #     try:
+        # Deletar
+        try:
 
-    #         for localizacao in localizacoes:
-    #             db.session.delete(localizacao)
+            for localizacao in localizacoes:
+                db.session.delete(localizacao)
 
-    #         for funcionamento in funcionamentos:
-    #             db.session.delete(funcionamento)
+            for funcionamento in funcionamentos:
+                db.session.delete(funcionamento)
 
-    #         for ecoponto in ecopontos:
-    #             db.session.delete(ecoponto)
+            for ecoponto in ecopontos:
+                db.session.delete(ecoponto)
 
-    #         db.session.commit()
+            db.session.commit()
 
-    #         message = f"Ecopontos deletadas com sucesso"
-    #         logging.debug(message)
+            message = f"Ecopontos deletadas com sucesso"
+            logging.debug(message)
     
-    #     except IntegrityError as error:
-    #         message = f"Error delete ecopontos: {error}"
-    #         logging.warning(message)
-    #         abort(
-    #             400,
-    #             message="Erro ao deletar ecopontos.",
-    #         )
+        except IntegrityError as error:
+            message = f"Error delete ecopontos: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar ecopontos.",
+            )
             
-    #     except SQLAlchemyError as error:
-    #         message = f"Error delete ecopontos: {error}"
-    #         logging.warning(message)
-    #         abort(500, message="Server Error.")
+        except SQLAlchemyError as error:
+            message = f"Error delete ecopontos: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
 
-    #     return {"message": "Todos registros deletados."}
+        return {"message": "Todos registros deletados."}
       
 
 @blp.route("/ecoponto/funcionamento")

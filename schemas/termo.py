@@ -2,7 +2,8 @@ from marshmallow import Schema, fields, validate
 
 
 class ItemTermoSchema(Schema):
-    id = fields.Int(required=True)
+    id = fields.Int(dump_only=True)
+    id_termo = fields.Int(required=True)
     aceite = fields.Bool(missing=False)
 
 
