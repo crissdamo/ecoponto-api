@@ -338,70 +338,73 @@ class Ecopontos(MethodView):
 @blp.route("/ecoponto/funcionamento")
 class EcopontoFuncionamento(MethodView):
 
-    # @blp.arguments(EcopontoFuncionamentoSchema)
-    # @blp.response(200, RetornoEcopontoFuncionamentoSchema)
-    # def put(self, ecoponto_data):
+    @blp.arguments(EcopontoFuncionamentoSchema)
+    @blp.response(200, RetornoEcopontoFuncionamentoSchema)
+    def put(self, ecoponto_data):
 
-    #     # Dados recebidos:
+        # Dados recebidos:
 
-    #     ecoponto_id = ecoponto_data['ecoponto_id']
-    #     dias_funcionamento = ecoponto_data.get('dia_funcionamento')
-    #     dias_funcionamento_list = []
+        ecoponto_id = ecoponto_data['ecoponto_id']
+        dias_funcionamento = ecoponto_data.get('dia_funcionamento')
+        dias_funcionamento_list = []
 
-    #     # Cria objetos:
-    #     ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
+        # Cria objetos:
+        ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
 
-    #     if dias_funcionamento:
+        dias_funcionamento_anterior = ecoponto.dia_funcionamento
 
-    #         for funcionamento in dias_funcionamento:
-                
-    #             dia_semana = funcionamento.get('dia_semana')
-    #             hora_inicial = funcionamento.get('hora_inicial')
-    #             hora_final = funcionamento.get('hora_final')
+        if dias_funcionamento:
 
-    #             dia_funcionamento_obj = DiaFuncionamentoModel(
-    #                 dia_semana=dia_semana,
-    #                 hora_inicial=hora_inicial,
-    #                 hora_final=hora_final,
-    #                 ecoponto=ecoponto
-    #             )
+            for funcionamento in dias_funcionamento:
+                dia_semana = funcionamento.get('dia_semana')
+                hora_inicial = funcionamento.get('hora_inicial')
+                hora_final = funcionamento.get('hora_final')
 
-    #             dias_funcionamento_list.append(dia_funcionamento_obj)
+                dia_funcionamento_obj = DiaFuncionamentoModel(
+                    dia_semana=dia_semana,
+                    hora_inicial=hora_inicial,
+                    hora_final=hora_final,
+                    ecoponto=ecoponto
+                )
 
- 
-    #     # # # Salva em BD
-    #     try:
+                dias_funcionamento_list.append(dia_funcionamento_obj)
+
+        # Salva em BD
+        try:
            
-    #         for funcionamento in dias_funcionamento_list:
-    #              db.session.add(funcionamento)
+            for funcionamento in dias_funcionamento_anterior:
+                 db.session.delete(funcionamento)
+           
+            for funcionamento in dias_funcionamento_list:
+                 db.session.add(funcionamento)
 
-    #         db.session.commit()
+            db.session.commit()
 
-    #         message = f"Dias de funcionamento do Ecoponto criados com sucesso"
-    #         logging.debug(message)
+            message = f"Dias de funcionamento do Ecoponto criados com sucesso"
+            logging.debug(message)
     
-    #     except IntegrityError as error:
-    #         message = f"Error create ecoponto diasfuncionamento: {error}"
-    #         logging.warning(message)
-    #         abort(
-    #             400,
-    #             message="Erro ao criar dias de funcionamento do ecoponto.",
-    #         )
-    #     except SQLAlchemyError as error:
-    #         message = f"Error create ecoponto diasfuncionamento: {error}"
-    #         logging.warning(message)
-    #         abort(500, message="Server Error.")
+        except IntegrityError as error:
+            message = f"Error create ecoponto diasfuncionamento: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao criar dias de funcionamento do ecoponto.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error create ecoponto diasfuncionamento: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
 
-    #     ecoponto_schema = EcopontoFuncionamentoSchema()
-    #     result = ecoponto_schema.dump(ecoponto)
-    #     context = {
-    #         "code": 200,
-    #         "status": "OK",
-    #         "message": "",
-    #         "value": result
-    #     }
+        ecoponto_schema = EcopontoFuncionamentoSchema()
+        result = ecoponto_schema.dump(ecoponto)
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "value": result
+        }
 
-    #     return jsonify(context)
+        return jsonify(context)
 
 
     @blp.arguments(EcopontoFuncionamentoSchema)
