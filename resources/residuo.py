@@ -15,7 +15,7 @@ blp = Blueprint("Resíduos", "resíduos", description="Operações sobre resídu
 @blp.route("/residuo")
 class Residuos(MethodView):
 
-    @blp.arguments(PlainResiduoSchema)
+    @blp.arguments(ResiduoSchema)
     @blp.response(201, ResiduoSchema)
     def post(self, residuo_data):
 
@@ -25,7 +25,7 @@ class Residuos(MethodView):
         icone = residuo_data.get('icone')
         url_midia = residuo_data.get('url_midia')
         recolhido_em_ecoponto = residuo_data.get('recolhido_em_ecoponto')
-        categorias = residuo_data.get('categorias')
+        categorias = residuo_data.get('categoria')
 
         # validações:
         if ResiduoModel.query.filter(ResiduoModel.descricao == descricao).first():
@@ -47,7 +47,7 @@ class Residuos(MethodView):
 
             if categorias:
                 for categoria in categorias:
-                    categoria_id = categoria.get('id_categoria')
+                    categoria_id = categoria.get('id')
                     categoriao_object = CategoriaModel().query.get_or_404(categoria_id)
 
                     categoria_residuo = CategoriaResiduoModel(

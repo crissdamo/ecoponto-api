@@ -2,7 +2,7 @@ from marshmallow import Schema, fields
 
 
 class ItemCategoriaSchema(Schema):
-    id_categoria = fields.Int(required=True)
+    id = fields.Int(required=True)
 
 
 class ItemResiduoSchema(Schema):
@@ -35,6 +35,6 @@ class CategoriaSchema(PlainResiduoSchema):
    
     
 class ResiduoSchema(PlainResiduoSchema):
-    categoria = fields.List(fields.Nested(PlainCategoriaSchema()), dump_only=True)
+    categoria = fields.List(fields.Nested(ItemCategoriaSchema), required=True)
     
 
