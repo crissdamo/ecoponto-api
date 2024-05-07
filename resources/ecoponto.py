@@ -17,7 +17,8 @@ from schemas.empresa_ecoponto import (
     EcopontoGetSchema,
     EcopontoLocalizacaoSchema,
     EcopontoLocalizacaoUpdateSchema, 
-    EcopontoResiduoSchema, 
+    EcopontoResiduoSchema,
+    EcopontoSearchSchema, 
     RetornoEcopontoFuncionamentoSchema,
     RetornoEcopontoLocalizacaoSchema,
     RetornoEcopontoResiduoSchema,  
@@ -154,14 +155,25 @@ class Ecoponto(MethodView):
         return jsonify(context)
 
 
-
-@blp.route("/ecoponto")
+@blp.route("/ecoponto/")
 class Ecopontos(MethodView):
-
+    
+    @blp.arguments(EcopontoSearchSchema, location="query")
     @blp.response(200, RetornoListaEcopontoSchema(many=True))
-    def get(self):
+    def get(self, query_args):
+
         result_lista = []
+
+        residuo_id = query_args.get("residuo_id")
+        localizacao = query_args.get("localizacao")
+        palavra_chave = query_args.get("palavra_chave")
+
         ecopontos = EcopontoModel().query.all()
+        
+        if residuo_id:
+            residuo = ResiduoModel().query.get_or_404(residuo_id)
+            ecopontos = residuo.ecoponto
+
         for ecoponto in ecopontos:
             ecoponto_schema = EcopontoGetSchema()
             result = ecoponto_schema.dump(ecoponto)
@@ -615,4 +627,3 @@ class EcopontoPostResiduo(MethodView):
         }
 
         return jsonify(context)
-

@@ -194,3 +194,8 @@ class RetornoEcopontoResiduoSchema(RetornoSchema):
     Values = fields.Nested(EcopontoResiduoSchema())
   
 
+# argumentos d epesquisa
+class EcopontoSearchSchema(Schema):
+    residuo_id = fields.Int(required=False)
+    localizacao = fields.Str(required=False)
+    palavra_chave = fields.Str(required=False)
