@@ -1,4 +1,5 @@
 import logging.handlers
+from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from models.categoria import CategoriaModel
@@ -14,6 +15,31 @@ blp = Blueprint("Resíduos", "resíduos", description="Operações sobre resídu
 
 @blp.route("/residuo")
 class Residuos(MethodView):
+
+
+    @blp.response(201, ResiduoSchema)
+    def get(self):
+        result_lista = []
+
+        residuos = ResiduoModel().query.all()
+
+        # if recolhe_ecoponto:
+        #     residuos = residuos.filter(ResiduoModel.recolhido_em_ecoponto == True)
+
+        
+        for residuo in residuos:
+            residuo_schema = ResiduoSchema()
+            result = residuo_schema.dump(residuo)
+            result_lista.append(result)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result_lista
+        }
+        
+        return jsonify(context)
 
     @blp.arguments(ResiduoSchema)
     @blp.response(201, ResiduoSchema)
