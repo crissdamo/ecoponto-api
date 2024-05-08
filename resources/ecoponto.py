@@ -2,6 +2,7 @@ import logging.handlers
 from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from sqlalchemy import or_
 from models.dia_funcionamento import DiaFuncionamentoModel
 from models.ecoponto import EcopontoModel
 
@@ -163,18 +164,40 @@ class Ecopontos(MethodView):
     def get(self, query_args):
 
         result_lista = []
-
         residuo_id = query_args.get("residuo_id")
         localizacao = query_args.get("localizacao")
-        palavra_chave = query_args.get("palavra_chave")
 
-        ecopontos = EcopontoModel().query.all()
+        query = EcopontoModel().query.all()
+        set_ids_lista = {ecoponto for ecoponto in query}
+        intersecao_ids = set_ids_lista
         
+        if localizacao:
+
+            # Realiza a consulta para encontrar os ecopontos com base na localizacao
+            query1 = db.session.query(EcopontoModel).join(LocalizacaoModel).filter(
+                or_(
+                    LocalizacaoModel.rua.ilike(f'%{localizacao}%'),
+                    LocalizacaoModel.numero.ilike(f'%{localizacao}%'),
+                    LocalizacaoModel.bairro.ilike(f'%{localizacao}%'),
+                    LocalizacaoModel.cep.ilike(f'%{localizacao}%'),
+                    LocalizacaoModel.cidade.ilike(f'%{localizacao}%'),
+                    LocalizacaoModel.estado.ilike(f'%{localizacao}%'),
+                    LocalizacaoModel.complemento.ilike(f'%{localizacao}%'),
+                )
+            ).all()
+
+            set_ids_lista1 = {ecoponto for ecoponto in query1}
+            intersecao_ids = set_ids_lista.intersection(set_ids_lista1)
+            set_ids_lista = set_ids_lista1
+
         if residuo_id:
             residuo = ResiduoModel().query.get_or_404(residuo_id)
-            ecopontos = residuo.ecoponto
+            query2 = residuo.ecoponto
 
-        for ecoponto in ecopontos:
+            set_ids_lista1 = {ecoponto for ecoponto in query2}
+            intersecao_ids = set_ids_lista.intersection(set_ids_lista1)
+
+        for ecoponto in intersecao_ids:
             ecoponto_schema = EcopontoGetSchema()
             result = ecoponto_schema.dump(ecoponto)
             result_lista.append(result)
