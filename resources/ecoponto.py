@@ -156,7 +156,7 @@ class Ecoponto(MethodView):
         return jsonify(context)
 
 
-@blp.route("/ecoponto/")
+@blp.route("/ecoponto")
 class Ecopontos(MethodView):
     
     @blp.arguments(EcopontoSearchSchema, location="query")
