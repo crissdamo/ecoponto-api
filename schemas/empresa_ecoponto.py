@@ -109,7 +109,7 @@ class EcopontoGetSchema(PlainEcopontoSchema):
     localizacao = fields.List(fields.Nested(PlainLocalizacaoSchema), required=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=False)
     residuo = fields.List(fields.Nested(PlainResiduoSchema), required=False)
-
+    funcionamento = fields.Str(required=False)
 
 # Empresa + ecoponto
 class EmpresaUpdateSchema(PlainEmpresaUpdateSchema):

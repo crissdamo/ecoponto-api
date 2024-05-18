@@ -9,7 +9,6 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 
 from extensions.database import db
-import models
 
 
 from resources.usuario import blp as UsuarioBlueprint
@@ -36,6 +35,7 @@ def create_app(db_url=None):
 
     db.init_app(app)
     CORS(app)
+
     migrate = Migrate(app, db)
 
     api = Api(app)
@@ -48,11 +48,9 @@ def create_app(db_url=None):
     api.register_blueprint(EcopontoBlueprint)
     api.register_blueprint(CategoriaBlueprint)
     api.register_blueprint(ResiduoBlueprint)
-
+    
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
         
-    # with app.app_context():
-    #     db.create_all()
     
     return app

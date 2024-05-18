@@ -1,7 +1,16 @@
 {
   "ecoponto_id": 5,
   "dia_funcionamento": [
-
+    {
+      "dia_semana": "seg",
+      "hora_inicial": "10:00",
+      "hora_final": "11:30"
+    },
+              {
+      "dia_semana": "seg",
+      "hora_inicial": "13:00",
+      "hora_final": "18:00"
+    },
     {
       "dia_semana": "ter",
       "hora_inicial": "09:00",
@@ -30,6 +39,16 @@
               {
       "dia_semana": "qui",
       "hora_inicial": "14:00",
+      "hora_final": "18:00"
+    },
+    {
+      "dia_semana": "sex",
+      "hora_inicial": "10:00",
+      "hora_final": "11:30"
+    },
+              {
+      "dia_semana": "sex",
+      "hora_inicial": "13:00",
       "hora_final": "18:00"
     }
   ]

@@ -3,11 +3,13 @@ from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from collections import defaultdict
+import itertools
+
+from extensions.database import db
 from models.dia_funcionamento import DiaFuncionamentoModel
 from models.ecoponto import EcopontoModel
-
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from extensions.database import db
 from models.ecoponto_residuo import EcopontoResiduoModel
 from models.empresa import EmpresaModel
 from models.enums.situacao_ecoponto import SituacaoEnum
@@ -28,6 +30,60 @@ from schemas.empresa_ecoponto import (
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
 
+def transforma_dia_funcionamento(dias_funcionamento):
+
+    for horario in dias_funcionamento:
+        dia = str(horario['dia_semana'])
+        dia = str(horario['dia_semana']).split('.')
+        dia = dia[-1]
+        horario['dia_semana'] = dia
+    return dias_funcionamento
+
+    
+def agrupar_horarios(dia_funcionamento):
+
+    # Passo 1: Organizar horários por dia da semana
+    horarios_por_dia = defaultdict(list)
+    for horario in dia_funcionamento:
+        dia = horario['dia_semana']
+        intervalo = f"{horario['hora_inicial']} às {horario['hora_final']}"
+        horarios_por_dia[dia].append(intervalo)
+
+    # Passo 2: Identificar horários iguais em dias consecutivos
+    dias_semana = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
+    grupos = []
+    for key, group in itertools.groupby(enumerate(dias_semana), lambda x: horarios_por_dia.get(x[1])):
+        dias_grupo = list(group)
+        if key:  # Apenas adiciona se key não for None
+            grupos.append((key, [dias[1] for dias in dias_grupo]))
+
+    # Passo 3: Criar a string resumida
+    partes = []
+
+    for horarios, dias in grupos:
+        dias_str = dias[0] if len(dias) == 1 else f"{dias[0]} a {dias[-1]}"
+        horarios_str = " - ".join(horarios_por_dia[dias[0]])
+        partes.append(f"{dias_str} das {horarios_str}")
+
+
+    funcionamento_string = ""
+    len_partes = len(partes) - 1
+    for index, parte in enumerate(partes):
+        
+        # ultimo ou só tem um
+        if index == len_partes or len_partes == 0:
+            funcionamento_string += f"{parte} "
+        
+        # penúltimo
+        elif (len_partes - index) == 1:
+            funcionamento_string += f"{parte} e "
+
+        else:
+            funcionamento_string += f"{parte}, "
+        
+    return funcionamento_string
+
+
 @blp.route("/ecoponto/<int:ecoponto_id>")
 class Ecoponto(MethodView):
 
@@ -36,6 +92,14 @@ class Ecoponto(MethodView):
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
         ecoponto_schema = EcopontoGetSchema()
         result = ecoponto_schema.dump(ecoponto)
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+        result["dia_funcionamento"] = dia_funcionamento
+
+        # agrupa horário de funcionamento em uma única string
+        result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
         context = {
             "code": 200,
@@ -191,15 +255,28 @@ class Ecopontos(MethodView):
             set_ids_lista = set_ids_lista1
 
         if residuo_id:
+
+            # Pega todos ecopontos do resíduo pesquisado
             residuo = ResiduoModel().query.get_or_404(residuo_id)
             query2 = residuo.ecoponto
 
+            # Pega todos ecopontos do resíduo pesquisado, coloca em um grupo para não ter ecoponto duplo
             set_ids_lista1 = {ecoponto for ecoponto in query2}
+
+            # Pega apenas os ecopontos que combinam com as duas pesquisas
             intersecao_ids = set_ids_lista.intersection(set_ids_lista1)
 
         for ecoponto in intersecao_ids:
             ecoponto_schema = EcopontoGetSchema()
             result = ecoponto_schema.dump(ecoponto)
+            dias_funcionamento = result.get('dia_funcionamento')
+
+            # estrai valor do enum
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
             result_lista.append(result)
 
         context = {
