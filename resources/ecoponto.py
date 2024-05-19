@@ -29,13 +29,14 @@ from schemas.empresa_ecoponto import (
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
+def retira_valor_enum(valor):
+    valor = str(valor).split('.')
+    return valor[-1]
 
 def transforma_dia_funcionamento(dias_funcionamento):
 
     for horario in dias_funcionamento:
-        dia = str(horario['dia_semana'])
-        dia = str(horario['dia_semana']).split('.')
-        dia = dia[-1]
+        dia = retira_valor_enum(horario['dia_semana'])
         horario['dia_semana'] = dia
     return dias_funcionamento
 
@@ -95,11 +96,18 @@ class Ecoponto(MethodView):
         dias_funcionamento = result.get('dia_funcionamento')
 
         # estrai valor do enum
-        dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
-        result["dia_funcionamento"] = dia_funcionamento
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
 
-        # agrupa horário de funcionamento em uma única string
-        result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
 
         context = {
             "code": 200,
@@ -210,6 +218,23 @@ class Ecoponto(MethodView):
 
         ecoponto_schema = EcopontoLocalizacaoSchema()
         result = ecoponto_schema.dump(ecoponto)
+
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 200,
             "status": "OK",
@@ -272,11 +297,19 @@ class Ecopontos(MethodView):
             dias_funcionamento = result.get('dia_funcionamento')
 
             # estrai valor do enum
-            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
-            result["dia_funcionamento"] = dia_funcionamento
+            if dias_funcionamento:
+                dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                result["dia_funcionamento"] = dia_funcionamento
 
-            # agrupa horário de funcionamento em uma única string
-            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+                # agrupa horário de funcionamento em uma única string
+                result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+            # estrai valor do enum
+            situacao = result.get("situacao")
+
+            if situacao:
+                result["situacao"] = retira_valor_enum(situacao)
+            
             result_lista.append(result)
 
         context = {
@@ -509,6 +542,19 @@ class EcopontoFuncionamento(MethodView):
 
         ecoponto_schema = EcopontoFuncionamentoSchema()
         result = ecoponto_schema.dump(ecoponto)
+
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+        result["dia_funcionamento"] = dia_funcionamento
+
+        # agrupa horário de funcionamento em uma única string
+        result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+        result["situacao"] = retira_valor_enum(situacao)
         context = {
             "code": 200,
             "status": "OK",
@@ -577,6 +623,20 @@ class EcopontoFuncionamento(MethodView):
 
         ecoponto_schema = EcopontoFuncionamentoSchema()
         result = ecoponto_schema.dump(ecoponto)
+
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+        result["dia_funcionamento"] = dia_funcionamento
+
+        # agrupa horário de funcionamento em uma única string
+        result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+        result["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 201,
             "status": "Created",
@@ -654,6 +714,23 @@ class EcopontoPostResiduo(MethodView):
 
         ecoponto_schema = EcopontoResiduoSchema()
         result = ecoponto_schema.dump(ecoponto)
+
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 200,
             "status": "OK",
@@ -719,6 +796,23 @@ class EcopontoPostResiduo(MethodView):
 
         ecoponto_schema = EcopontoResiduoSchema()
         result = ecoponto_schema.dump(ecoponto)
+
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 201,
             "status": "Created",
@@ -727,3 +821,120 @@ class EcopontoPostResiduo(MethodView):
         }
 
         return jsonify(context)
+
+
+@blp.route("/ecoponto/ativar/<int:ecoponto_id>")
+class Ecoponto(MethodView):
+
+    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+    def put(self, ecoponto_id):
+        ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
+
+        # Salva em BD
+        try:
+            db.session.add(ecoponto)
+            if ecoponto:
+                ecoponto.ativo = True
+                db.session.add(ecoponto)
+            db.session.commit()
+
+            message = f"Ecoponto ativado com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error active ecoponto: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao active ecoponto.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error active ecoponto: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        ecoponto_schema = EcopontoGetSchema()
+        result = ecoponto_schema.dump(ecoponto)
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result
+        }
+        
+        return jsonify(context)
+
+
+@blp.route("/ecoponto/desativar/<int:ecoponto_id>")
+class Ecoponto(MethodView):
+
+    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+    def put(self, ecoponto_id):
+        ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
+
+        # Salva em BD
+        try:
+            db.session.add(ecoponto)
+            if ecoponto:
+                ecoponto.ativo = False
+                db.session.add(ecoponto)
+            db.session.commit()
+
+            message = f"Ecoponto ativado com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error active ecoponto: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao active ecoponto.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error active ecoponto: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        ecoponto_schema = EcopontoGetSchema()
+        result = ecoponto_schema.dump(ecoponto)
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # estrai valor do enum
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # estrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result
+        }
+        
+        return jsonify(context)
+

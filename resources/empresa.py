@@ -14,6 +14,7 @@ from models.perfil_usuario import PerfilUsuarioModel
 from models.residuo import ResiduoModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
+from resources.ecoponto import agrupar_horarios, retira_valor_enum, transforma_dia_funcionamento
 from schemas.empresa_ecoponto import (
     EmpresaGetSchema, EmpresaSchema, 
     PlainEmpresaSchema, 
@@ -41,6 +42,28 @@ class Empresa(MethodView):
         empresa = EmpresaModel().query.get_or_404(empresa_id)
         empresa_schema = EmpresaGetSchema()
         result = empresa_schema.dump(empresa)
+
+        ecopontos = result.get('ecopontos')
+        if ecopontos:
+            for eco in ecopontos:
+                dias_funcionamento = eco.get('dia_funcionamento')
+
+                # estrai valor do enum
+                if dias_funcionamento:
+                    dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                    eco["dia_funcionamento"] = dia_funcionamento
+
+                    # agrupa horário de funcionamento em uma única string
+                    eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+                # estrai valor do enum
+                situacao = eco.get("situacao")
+
+                if situacao:
+                    eco["situacao"] = retira_valor_enum(situacao)
+
+
+        print(ecopontos)
         context = {
             "code": 200,
             "status": "OK",
@@ -101,7 +124,7 @@ class Empresa(MethodView):
         email = empresa_data['email']
         cnpj=empresa_data['cnpj']
         telefone_contato = empresa_data['telefone']
-        senha = empresa_data["senha"]
+        senha = empresa_data.get("senha")
         nome_contato_responsavel = empresa_data['nome_contato_responsavel']
 
         cnpj = apenas_digitos(str(cnpj))
@@ -146,9 +169,10 @@ class Empresa(MethodView):
             if UsuarioModel.query.filter(UsuarioModel.email == email).first():
                 abort(409, message="E-mail já cadastrado")
             usuario.email = email
-        
-        if usuario.senha != pbkdf2_sha256.hash(senha):
-            usuario.senha = pbkdf2_sha256.hash(senha)
+
+        if senha:
+            if usuario.senha != pbkdf2_sha256.hash(senha):
+                usuario.senha = pbkdf2_sha256.hash(senha)
         
         perfil_usuario = PerfilUsuarioModel.query.filter(PerfilUsuarioModel.usuario == usuario).first()
         perfil_usuario.nome=nome_contato_responsavel
@@ -206,6 +230,26 @@ class Empresa(MethodView):
 
         empresa_schema = EmpresaSchema()
         result = empresa_schema.dump(empresa)
+
+        ecopontos = result.get('ecopontos')
+        if ecopontos:
+            for eco in ecopontos:
+                dias_funcionamento = eco.get('dia_funcionamento')
+
+                # estrai valor do enum
+                if dias_funcionamento:
+                    dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                    eco["dia_funcionamento"] = dia_funcionamento
+
+                    # agrupa horário de funcionamento em uma única string
+                    eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+                # estrai valor do enum
+                situacao = eco.get("situacao")
+
+                if situacao:
+                    eco["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 200,
             "status": "OK",
@@ -227,6 +271,25 @@ class Empresas(MethodView):
             empresa_schema = EmpresaGetSchema()
             result = empresa_schema.dump(empresa)
             result_lista.append(result)
+
+            ecopontos = result.get('ecopontos')
+            if ecopontos:
+                for eco in ecopontos:
+                    dias_funcionamento = eco.get('dia_funcionamento')
+
+                    # estrai valor do enum
+                    if dias_funcionamento:
+                        dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                        eco["dia_funcionamento"] = dia_funcionamento
+
+                        # agrupa horário de funcionamento em uma única string
+                        eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+                    # estrai valor do enum
+                    situacao = eco.get("situacao")
+
+                    if situacao:
+                        eco["situacao"] = retira_valor_enum(situacao)
 
         context = {
             "code": 200,
@@ -352,6 +415,26 @@ class Empresas(MethodView):
 
         empresa_schema = EmpresaSchema()
         result = empresa_schema.dump(empresa)
+
+        ecopontos = result.get('ecopontos')
+        if ecopontos:
+            for eco in ecopontos:
+                dias_funcionamento = eco.get('dia_funcionamento')
+
+                # estrai valor do enum
+                if dias_funcionamento:
+                    dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                    eco["dia_funcionamento"] = dia_funcionamento
+
+                    # agrupa horário de funcionamento em uma única string
+                    eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+                # estrai valor do enum
+                situacao = eco.get("situacao")
+
+                if situacao:
+                    eco["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 201,
             "status": "Created",
@@ -613,6 +696,26 @@ class EmpresasEcoponto(MethodView):
 
         empresa_schema = EmpresaSchema()
         result = empresa_schema.dump(empresa)
+
+        ecopontos = result.get('ecopontos')
+        if ecopontos:
+            for eco in ecopontos:
+                dias_funcionamento = eco.get('dia_funcionamento')
+
+                # estrai valor do enum
+                if dias_funcionamento:
+                    dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                    eco["dia_funcionamento"] = dia_funcionamento
+
+                    # agrupa horário de funcionamento em uma única string
+                    eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+                # estrai valor do enum
+                situacao = eco.get("situacao")
+
+                if situacao:
+                    eco["situacao"] = retira_valor_enum(situacao)
+
         context = {
             "code": 201,
             "status": "Created",

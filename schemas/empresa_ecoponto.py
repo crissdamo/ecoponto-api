@@ -19,7 +19,7 @@ class PlainEmpresaUpdateSchema(Schema):
     nome_contato_responsavel = fields.Str(required=False)
     
     email = fields.Str(required=False)
-    senha = fields.Str(required=True, load_only=False)
+    senha = fields.Str(required=False, load_only=False)
 
     aceite_termo = fields.List(fields.Nested(AceiteTermoSchema), required=False)
 
