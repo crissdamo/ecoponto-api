@@ -48,7 +48,7 @@ class Empresa(MethodView):
             for eco in ecopontos:
                 dias_funcionamento = eco.get('dia_funcionamento')
 
-                # estrai valor do enum
+                # extrai valor do enum
                 if dias_funcionamento:
                     dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                     eco["dia_funcionamento"] = dia_funcionamento
@@ -56,7 +56,7 @@ class Empresa(MethodView):
                     # agrupa horário de funcionamento em uma única string
                     eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-                # estrai valor do enum
+                # extrai valor do enum
                 situacao = eco.get("situacao")
 
                 if situacao:
@@ -236,7 +236,7 @@ class Empresa(MethodView):
             for eco in ecopontos:
                 dias_funcionamento = eco.get('dia_funcionamento')
 
-                # estrai valor do enum
+                # extrai valor do enum
                 if dias_funcionamento:
                     dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                     eco["dia_funcionamento"] = dia_funcionamento
@@ -244,7 +244,7 @@ class Empresa(MethodView):
                     # agrupa horário de funcionamento em uma única string
                     eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-                # estrai valor do enum
+                # extrai valor do enum
                 situacao = eco.get("situacao")
 
                 if situacao:
@@ -277,7 +277,7 @@ class Empresas(MethodView):
                 for eco in ecopontos:
                     dias_funcionamento = eco.get('dia_funcionamento')
 
-                    # estrai valor do enum
+                    # extrai valor do enum
                     if dias_funcionamento:
                         dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                         eco["dia_funcionamento"] = dia_funcionamento
@@ -285,7 +285,7 @@ class Empresas(MethodView):
                         # agrupa horário de funcionamento em uma única string
                         eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-                    # estrai valor do enum
+                    # extrai valor do enum
                     situacao = eco.get("situacao")
 
                     if situacao:
@@ -421,7 +421,7 @@ class Empresas(MethodView):
             for eco in ecopontos:
                 dias_funcionamento = eco.get('dia_funcionamento')
 
-                # estrai valor do enum
+                # extrai valor do enum
                 if dias_funcionamento:
                     dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                     eco["dia_funcionamento"] = dia_funcionamento
@@ -429,7 +429,7 @@ class Empresas(MethodView):
                     # agrupa horário de funcionamento em uma única string
                     eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-                # estrai valor do enum
+                # extrai valor do enum
                 situacao = eco.get("situacao")
 
                 if situacao:
@@ -702,7 +702,7 @@ class EmpresasEcoponto(MethodView):
             for eco in ecopontos:
                 dias_funcionamento = eco.get('dia_funcionamento')
 
-                # estrai valor do enum
+                # extrai valor do enum
                 if dias_funcionamento:
                     dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                     eco["dia_funcionamento"] = dia_funcionamento
@@ -710,7 +710,7 @@ class EmpresasEcoponto(MethodView):
                     # agrupa horário de funcionamento em uma única string
                     eco["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-                # estrai valor do enum
+                # extrai valor do enum
                 situacao = eco.get("situacao")
 
                 if situacao:

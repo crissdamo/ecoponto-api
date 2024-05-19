@@ -95,7 +95,7 @@ class Ecoponto(MethodView):
         result = ecoponto_schema.dump(ecoponto)
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         if dias_funcionamento:
             dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
             result["dia_funcionamento"] = dia_funcionamento
@@ -103,7 +103,7 @@ class Ecoponto(MethodView):
             # agrupa horário de funcionamento em uma única string
             result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
 
         if situacao:
@@ -221,7 +221,7 @@ class Ecoponto(MethodView):
 
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         if dias_funcionamento:
             dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
             result["dia_funcionamento"] = dia_funcionamento
@@ -229,7 +229,7 @@ class Ecoponto(MethodView):
             # agrupa horário de funcionamento em uma única string
             result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
 
         if situacao:
@@ -296,7 +296,7 @@ class Ecopontos(MethodView):
             result = ecoponto_schema.dump(ecoponto)
             dias_funcionamento = result.get('dia_funcionamento')
 
-            # estrai valor do enum
+            # extrai valor do enum
             if dias_funcionamento:
                 dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                 result["dia_funcionamento"] = dia_funcionamento
@@ -304,7 +304,7 @@ class Ecopontos(MethodView):
                 # agrupa horário de funcionamento em uma única string
                 result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-            # estrai valor do enum
+            # extrai valor do enum
             situacao = result.get("situacao")
 
             if situacao:
@@ -545,14 +545,14 @@ class EcopontoFuncionamento(MethodView):
 
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
         result["dia_funcionamento"] = dia_funcionamento
 
         # agrupa horário de funcionamento em uma única string
         result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
         result["situacao"] = retira_valor_enum(situacao)
         context = {
@@ -626,14 +626,14 @@ class EcopontoFuncionamento(MethodView):
 
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
         result["dia_funcionamento"] = dia_funcionamento
 
         # agrupa horário de funcionamento em uma única string
         result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
         result["situacao"] = retira_valor_enum(situacao)
 
@@ -717,7 +717,7 @@ class EcopontoPostResiduo(MethodView):
 
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         if dias_funcionamento:
             dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
             result["dia_funcionamento"] = dia_funcionamento
@@ -725,7 +725,7 @@ class EcopontoPostResiduo(MethodView):
             # agrupa horário de funcionamento em uma única string
             result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
 
         if situacao:
@@ -799,7 +799,7 @@ class EcopontoPostResiduo(MethodView):
 
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         if dias_funcionamento:
             dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
             result["dia_funcionamento"] = dia_funcionamento
@@ -807,7 +807,7 @@ class EcopontoPostResiduo(MethodView):
             # agrupa horário de funcionamento em uma única string
             result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
 
         if situacao:
@@ -846,7 +846,7 @@ class Ecoponto(MethodView):
             logging.warning(message)
             abort(
                 400,
-                message="Erro ao active ecoponto.",
+                message="Erro ao activar ecoponto.",
             )
         except SQLAlchemyError as error:
             message = f"Error active ecoponto: {error}"
@@ -857,7 +857,7 @@ class Ecoponto(MethodView):
         result = ecoponto_schema.dump(ecoponto)
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         if dias_funcionamento:
             dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
             result["dia_funcionamento"] = dia_funcionamento
@@ -865,7 +865,7 @@ class Ecoponto(MethodView):
             # agrupa horário de funcionamento em uma única string
             result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
         situacao = result.get("situacao")
 
         if situacao:
@@ -904,7 +904,7 @@ class Ecoponto(MethodView):
             logging.warning(message)
             abort(
                 400,
-                message="Erro ao active ecoponto.",
+                message="Erro ao desativar ecoponto.",
             )
         except SQLAlchemyError as error:
             message = f"Error active ecoponto: {error}"
@@ -915,7 +915,7 @@ class Ecoponto(MethodView):
         result = ecoponto_schema.dump(ecoponto)
         dias_funcionamento = result.get('dia_funcionamento')
 
-        # estrai valor do enum
+        # extrai valor do enum
         if dias_funcionamento:
             dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
             result["dia_funcionamento"] = dia_funcionamento
@@ -923,7 +923,72 @@ class Ecoponto(MethodView):
             # agrupa horário de funcionamento em uma única string
             result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # estrai valor do enum
+        # extrai valor do enum
+        situacao = result.get("situacao")
+
+        if situacao:
+            result["situacao"] = retira_valor_enum(situacao)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result
+        }
+        
+        return jsonify(context)
+
+
+@blp.route("/ecoponto/<string:situacao>/<int:ecoponto_id>")
+class Ecoponto(MethodView):
+
+    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+    def put(self, situacao, ecoponto_id):
+        
+        ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
+
+        if situacao != "em_analise" and situacao != "aprovado" and situacao != "rejeitado" and situacao != "desativado":
+            abort(
+                400,
+                message="status inválido. Status deve ser 'em_analise', 'aprovado', 'rejeitado' ou'desativado'",)
+
+        # Salva em BD
+        try:
+            db.session.add(ecoponto)
+            if ecoponto:
+                ecoponto.situacao = situacao
+                db.session.add(ecoponto)
+            db.session.commit()
+
+            message = f"situação do Ecoponto alterado com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error status ecoponto: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao alterar situacao ecoponto.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error status ecoponto: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        ecoponto_schema = EcopontoGetSchema()
+        result = ecoponto_schema.dump(ecoponto)
+
+        dias_funcionamento = result.get('dia_funcionamento')
+
+        # extrai valor do enum
+        if dias_funcionamento:
+            dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+            result["dia_funcionamento"] = dia_funcionamento
+
+            # agrupa horário de funcionamento em uma única string
+            result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+        # extrai valor do enum
         situacao = result.get("situacao")
 
         if situacao:
