@@ -846,7 +846,7 @@ class Ecoponto(MethodView):
             logging.warning(message)
             abort(
                 400,
-                message="Erro ao activar ecoponto.",
+                message="Erro ao ativar ecoponto.",
             )
         except SQLAlchemyError as error:
             message = f"Error active ecoponto: {error}"
@@ -896,18 +896,18 @@ class Ecoponto(MethodView):
                 db.session.add(ecoponto)
             db.session.commit()
 
-            message = f"Ecoponto ativado com sucesso"
+            message = f"Ecoponto desativado com sucesso"
             logging.debug(message)
     
         except IntegrityError as error:
-            message = f"Error active ecoponto: {error}"
+            message = f"Error deactive ecoponto: {error}"
             logging.warning(message)
             abort(
                 400,
                 message="Erro ao desativar ecoponto.",
             )
         except SQLAlchemyError as error:
-            message = f"Error active ecoponto: {error}"
+            message = f"Error deactive ecoponto: {error}"
             logging.warning(message)
             abort(500, message="Server Error.")
 
