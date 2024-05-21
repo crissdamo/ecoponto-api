@@ -179,7 +179,6 @@ class EcopontoFuncionamentoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=True)
     
-
 class RetornoEcopontoFuncionamentoSchema(RetornoSchema):
     value = fields.Nested(EcopontoLocalizacaoSchema())
   
@@ -203,3 +202,9 @@ class EcopontoSearchSchema(Schema):
 class EcopontoSituacaoSchema(Schema):
     situacao = fields.Str(required=False)
     situacao_enum = fields.Str(required=False)
+
+
+
+class RetornoEcopontoFuncionamentoSchema(RetornoSchema):
+    value = fields.Nested(EcopontoSituacaoSchema())
+  

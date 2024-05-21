@@ -1032,7 +1032,7 @@ class Ecoponto(MethodView):
 @blp.route("/ecoponto/situacao")
 class Ecoponto(MethodView):
 
-    @blp.response(200, EcopontoSituacaoSchema)
+    @blp.response(200, RetornoEcopontoFuncionamentoSchema)
     def get(self):
 
         result_list = []
