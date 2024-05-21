@@ -1,3 +1,4 @@
+from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from passlib.hash import pbkdf2_sha256
@@ -19,64 +20,78 @@ class RegistrarUsuario(MethodView):
     def post(self, usuario_data):
 
         email = usuario_data["email"]
+        telefone = usuario_data['telefone']
+        nome = usuario_data['nome']
 
         if UsuarioModel.query.filter(UsuarioModel.email == email).first():
             abort(409, message="E-mail já cadastrado")
         
         usuario = UsuarioModel(
-            email=usuario_data["email"],
+            email=email,
             senha=pbkdf2_sha256.hash(usuario_data["senha"])
         )
         db.session.add(usuario)
         db.session.commit()
 
-        return {"message": "Usuário criado com sucesso."}, 201
+        # return {"message": "Usuário criado com sucesso."}, 201
 
-
-# @blp.route("/login")
-# class UsuarioLogin(MethodView):
-#     @blp.arguments(PlainUsuarioSchema)
-#     def post(self, usuario_data):
-#         usuario = UsuarioModel.query.filter(
-#             UsuarioModel.email == usuario_data["email"]
-#         ).first()
-
-#         if usuario and pbkdf2_sha256.verify(usuario_data["senha"], usuario.senha):
-#             access_token = create_access_token(identity=usuario.id, fresh=True)
-#             refresh_token = create_refresh_token(identity=usuario.id)
-#             return {"access_token": access_token, "refresh_token": refresh_token}
+        usuario_schema = PlainUsuarioSchema()
+        result = usuario_schema.dump(usuario)
+    
+        context = {
+            "code": 201,
+            "status": "Created",
+            "message": "",
+            "value": result
+        }
         
-#         abort(401, message="Credenciais inválidas.")
+        return jsonify(context)
 
 
-# @blp.route("/refresh")
-# class TokenRefresh(MethodView):
-#     @jwt_required(refresh=True)
-#     def post(self):
-#         usuario_atual = get_jwt_identity()
-#         novo_token = create_access_token(identity=usuario_atual, fresh=False)
-#         return {"access_token": novo_token}
+@blp.route("/login")
+class UsuarioLogin(MethodView):
+    @blp.arguments(PlainUsuarioSchema)
+    def post(self, usuario_data):
+        usuario = UsuarioModel.query.filter(
+            UsuarioModel.email == usuario_data["email"]
+        ).first()
+
+        if usuario and pbkdf2_sha256.verify(usuario_data["senha"], usuario.senha):
+            access_token = create_access_token(identity=usuario.id, fresh=True)
+            refresh_token = create_refresh_token(identity=usuario.id)
+            return {"access_token": access_token, "refresh_token": refresh_token}
+        
+        abort(401, message="Credenciais inválidas.")
 
 
-# @blp.route("/logout")
-# class usuarioLogout(MethodView):
-#     @jwt_required()
-#     def post(self):
-#         jti = get_jwt()["jti"]
-#         BLOCKLIST.add(jti)
-#         return {"message": "Logout realizado com sucesso."}
+@blp.route("/refresh")
+class TokenRefresh(MethodView):
+    @jwt_required(refresh=True)
+    def post(self):
+        usuario_atual = get_jwt_identity()
+        novo_token = create_access_token(identity=usuario_atual, fresh=False)
+        return {"access_token": novo_token}
 
 
-# @blp.route("/usuario/<int:usuario_id>")
-# class usuario(MethodView):
-#     @blp.response(200, PlainUsuarioSchema)
-#     def get(self, usuario_id):
-#         usuario = UsuarioModel.query.get_or_404(usuario_id)
-#         return usuario
+@blp.route("/logout")
+class usuarioLogout(MethodView):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()["jti"]
+        BLOCKLIST.add(jti)
+        return {"message": "Logout realizado com sucesso."}
 
-#     def delete(self, usuario_id):
-#         usuario = UsuarioModel.query.get_or_404(usuario_id)
-#         db.session.delete(usuario)
-#         db.session.commit()
-#         return {"message": "Usuario excluido."}, 200
+
+@blp.route("/usuario/<int:usuario_id>")
+class usuario(MethodView):
+    @blp.response(200, PlainUsuarioSchema)
+    def get(self, usuario_id):
+        usuario = UsuarioModel.query.get_or_404(usuario_id)
+        return usuario
+
+    def delete(self, usuario_id):
+        usuario = UsuarioModel.query.get_or_404(usuario_id)
+        db.session.delete(usuario)
+        db.session.commit()
+        return {"message": "Usuario excluido."}, 200
     
