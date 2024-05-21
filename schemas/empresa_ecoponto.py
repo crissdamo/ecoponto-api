@@ -198,3 +198,8 @@ class RetornoEcopontoResiduoSchema(RetornoSchema):
 class EcopontoSearchSchema(Schema):
     residuo_id = fields.Int(required=False)
     localizacao = fields.Str(required=False)
+
+
+class EcopontoSituacaoSchema(Schema):
+    situacao = fields.Str(required=False)
+    situacao_enum = fields.Str(required=False)

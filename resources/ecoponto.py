@@ -12,6 +12,7 @@ from models.dia_funcionamento import DiaFuncionamentoModel
 from models.ecoponto import EcopontoModel
 from models.ecoponto_residuo import EcopontoResiduoModel
 from models.empresa import EmpresaModel
+from models.enums.dia_semana import DiasSemanaEnum
 from models.enums.situacao_ecoponto import SituacaoEnum
 from models.localizacao import LocalizacaoModel
 from models.residuo import ResiduoModel
@@ -21,7 +22,8 @@ from schemas.empresa_ecoponto import (
     EcopontoLocalizacaoSchema,
     EcopontoLocalizacaoUpdateSchema, 
     EcopontoResiduoSchema,
-    EcopontoSearchSchema, 
+    EcopontoSearchSchema,
+    EcopontoSituacaoSchema, 
     RetornoEcopontoFuncionamentoSchema,
     RetornoEcopontoLocalizacaoSchema,
     RetornoEcopontoResiduoSchema,  
@@ -29,14 +31,25 @@ from schemas.empresa_ecoponto import (
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
-def retira_valor_enum(valor):
-    valor = str(valor).split('.')
-    return valor[-1]
+def retira_valor_enumSituacao(valor):
+    enum = str(valor).split('.')
+    enum = enum[-1]
+
+    valor = SituacaoEnum[enum].value
+    nome = SituacaoEnum[enum].name
+    return valor, nome
+
+def retira_valor_enumDiasSemana(valor):
+    enum = str(valor).split('.')
+    enum = enum[-1]
+    valor = DiasSemanaEnum[enum].value
+    nome = DiasSemanaEnum[enum].name
+    return valor, nome
 
 def transforma_dia_funcionamento(dias_funcionamento):
 
     for horario in dias_funcionamento:
-        dia = retira_valor_enum(horario['dia_semana'])
+        enum, dia = retira_valor_enumDiasSemana(horario['dia_semana'])
         horario['dia_semana'] = dia
     return dias_funcionamento
 
@@ -107,7 +120,9 @@ class Ecoponto(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 200,
@@ -233,7 +248,9 @@ class Ecoponto(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 200,
@@ -308,7 +325,9 @@ class Ecopontos(MethodView):
             situacao = result.get("situacao")
 
             if situacao:
-                result["situacao"] = retira_valor_enum(situacao)
+                valor, nome = retira_valor_enumSituacao(situacao)
+                result["situacao_enum"] = nome
+                result["situacao"] = valor
             
             result_lista.append(result)
 
@@ -554,7 +573,9 @@ class EcopontoFuncionamento(MethodView):
 
         # extrai valor do enum
         situacao = result.get("situacao")
-        result["situacao"] = retira_valor_enum(situacao)
+        valor, nome = retira_valor_enumSituacao(situacao)
+        result["situacao_enum"] = nome
+        result["situacao"] = valor
         context = {
             "code": 200,
             "status": "OK",
@@ -635,7 +656,9 @@ class EcopontoFuncionamento(MethodView):
 
         # extrai valor do enum
         situacao = result.get("situacao")
-        result["situacao"] = retira_valor_enum(situacao)
+        valor, nome = retira_valor_enumSituacao(situacao)
+        result["situacao_enum"] = nome
+        result["situacao"] = valor
 
         context = {
             "code": 201,
@@ -729,7 +752,9 @@ class EcopontoPostResiduo(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 200,
@@ -754,16 +779,8 @@ class EcopontoPostResiduo(MethodView):
         # Cria objetos:
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
 
-        empresa = ecoponto.empresa
-
-
         # # Salva em BD
         try:
-            # if descricao_outros_projetos:
-            #     empresa = ecoponto.empresa
-            #     empresa.descricao_outros_projetos = descricao_outros_projetos
-            #     db.session.add(empresa)
-
 
             if residuos:
                 for residuo in residuos:
@@ -811,7 +828,9 @@ class EcopontoPostResiduo(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 201,
@@ -869,7 +888,9 @@ class Ecoponto(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 200,
@@ -927,7 +948,9 @@ class Ecoponto(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 200,
@@ -992,13 +1015,43 @@ class Ecoponto(MethodView):
         situacao = result.get("situacao")
 
         if situacao:
-            result["situacao"] = retira_valor_enum(situacao)
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 200,
             "status": "OK",
             "message": "",
             "values": result
+        }
+        
+        return jsonify(context)
+
+
+@blp.route("/ecoponto/situacao")
+class Ecoponto(MethodView):
+
+    @blp.response(200, EcopontoSituacaoSchema)
+    def get(self):
+
+        result_list = []
+
+        situacoes = SituacaoEnum
+        for e in situacoes:
+            
+            result = {}
+            result["situacao_enum"] = e.name
+            result["situacao"] = e.value
+            situacao_schema = EcopontoSituacaoSchema()
+            result = situacao_schema.dump(result)
+            result_list.append(result)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result_list
         }
         
         return jsonify(context)

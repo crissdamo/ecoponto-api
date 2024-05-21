@@ -14,7 +14,7 @@ from models.perfil_usuario import PerfilUsuarioModel
 from models.residuo import ResiduoModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
-from resources.ecoponto import agrupar_horarios, retira_valor_enum, transforma_dia_funcionamento
+from resources.ecoponto import agrupar_horarios, retira_valor_enumSituacao, transforma_dia_funcionamento
 from schemas.empresa_ecoponto import (
     EmpresaGetSchema, EmpresaSchema, 
     PlainEmpresaSchema, 
@@ -60,10 +60,10 @@ class Empresa(MethodView):
                 situacao = eco.get("situacao")
 
                 if situacao:
-                    eco["situacao"] = retira_valor_enum(situacao)
+                    valor, nome = retira_valor_enumSituacao(situacao)
+                    eco["situacao_enum"] = nome
+                    eco["situacao"] = valor
 
-
-        print(ecopontos)
         context = {
             "code": 200,
             "status": "OK",
@@ -248,7 +248,9 @@ class Empresa(MethodView):
                 situacao = eco.get("situacao")
 
                 if situacao:
-                    eco["situacao"] = retira_valor_enum(situacao)
+                    valor, nome = retira_valor_enumSituacao(situacao)
+                    eco["situacao_enum"] = nome
+                    eco["situacao"] = valor
 
         context = {
             "code": 200,
@@ -289,7 +291,9 @@ class Empresas(MethodView):
                     situacao = eco.get("situacao")
 
                     if situacao:
-                        eco["situacao"] = retira_valor_enum(situacao)
+                        valor, nome = retira_valor_enumSituacao(situacao)
+                        eco["situacao_enum"] = nome
+                        eco["situacao"] = valor
 
         context = {
             "code": 200,
@@ -433,7 +437,9 @@ class Empresas(MethodView):
                 situacao = eco.get("situacao")
 
                 if situacao:
-                    eco["situacao"] = retira_valor_enum(situacao)
+                    valor, nome = retira_valor_enumSituacao(situacao)
+                    eco["situacao_enum"] = nome
+                    eco["situacao"] = valor
 
         context = {
             "code": 201,
@@ -714,7 +720,9 @@ class EmpresasEcoponto(MethodView):
                 situacao = eco.get("situacao")
 
                 if situacao:
-                    eco["situacao"] = retira_valor_enum(situacao)
+                    valor, nome = retira_valor_enumSituacao(situacao)
+                    eco["situacao_enum"] = nome
+                    eco["situacao"] = valor
 
         context = {
             "code": 201,
