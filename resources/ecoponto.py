@@ -23,11 +23,13 @@ from schemas.empresa_ecoponto import (
     EcopontoLocalizacaoUpdateSchema, 
     EcopontoResiduoSchema,
     EcopontoSearchSchema,
-    EcopontoSituacaoSchema, 
+    EcopontoSituacaoSchema,
     RetornoEcopontoFuncionamentoSchema,
-    RetornoEcopontoLocalizacaoSchema,
-    RetornoEcopontoResiduoSchema,  
+    RetornoEcopontoSchema,
+    RetornoEcopontoResiduoSchema,
+    RetornoEcopontoSituacaoSchema,
     RetornoListaEcopontoSchema)
+from schemas.paginacao import PaginacaoSearchSchema
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
 
@@ -100,9 +102,37 @@ def agrupar_horarios(dia_funcionamento):
 
 @blp.route("/ecoponto/<int:ecoponto_id>")
 class Ecoponto(MethodView):
+    """
+        Endpoint para gerenciar um ecoponto específico.
 
-    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+        Este endpoint permite buscar, atualizar e deletar um ecoponto pelo seu ID.
+
+        Métodos:
+        --------
+        get(ecoponto_id):
+            Busca um ecoponto pelo seu ID.
+        
+        delete(ecoponto_id):
+            Deleta um ecoponto pelo seu ID.
+        
+        put(ecoponto_data, ecoponto_id):
+            Atualiza um ecoponto pelo seu ID.
+    """
+
+    @blp.response(200, RetornoEcopontoSchema)
     def get(self, ecoponto_id):
+        """
+            Busca um ecoponto pelo seu ID.
+
+            **Descrição:** Busca o ecoponto pelo ID.
+            Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_id (int): O ID do ecoponto a ser buscado.
+
+            **Retorna:**
+                Um objeto JSON com as informações do ecoponto.
+        """
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
         ecoponto_schema = EcopontoGetSchema()
         result = ecoponto_schema.dump(ecoponto)
@@ -134,6 +164,19 @@ class Ecoponto(MethodView):
         return jsonify(context)
 
     def delete(self, ecoponto_id):
+        """
+            Deleta um ecoponto pelo seu ID.
+
+            **Descrição:** Deleta o ecoponto pelo seu ID.
+            Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_id (int): O ID do ecoponto a ser deletado.
+
+            **Retorna:**
+                Um objeto JSON com mensagem de confirmação.
+        """
+
         try:
             ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
             localizacoes = ecoponto.localizacao
@@ -176,8 +219,24 @@ class Ecoponto(MethodView):
 
 
     @blp.arguments(EcopontoLocalizacaoUpdateSchema)
-    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+    @blp.response(200, RetornoEcopontoSchema)
     def put(self, ecoponto_data, ecoponto_id):
+        """
+            Atualiza um ecoponto pelo seu ID.
+
+            **Descrição:** Atualiza um ecoponto pelo seu ID.
+            Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_data : dict
+                    Dados recebidos para atualizar o ecoponto.
+                ecoponto_id : int
+                    ID do ecoponto a ser atualizado.
+
+            **Retorna:**
+                Um objeto JSON com as informações do ecoponto.
+        """
+
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
 
         ecoponto.empresa_id = ecoponto_data['empresa_id']
@@ -264,23 +323,57 @@ class Ecoponto(MethodView):
 
 @blp.route("/ecoponto")
 class Ecopontos(MethodView):
+    """
+        Endpoint para gerenciar ecopontos.
+
+        Este endpoint permite buscar, criar e deletar ecopontos.
+
+        Métodos:
+        --------
+        get(query_args):
+            Busca ecopontos de acordo com os critérios fornecidos.
+        
+        post(ecoponto_data):
+            Cria um novo ecoponto.
+        
+        delete():
+            Deleta todos os ecopontos e suas relações associadas.
+    """
     
     @blp.arguments(EcopontoSearchSchema, location="query")
     @blp.response(200, RetornoListaEcopontoSchema(many=True))
     def get(self, query_args):
+        """
+            Retorna uma lista paginada de ecopontos filtrados pelos critérios informados.
+
+            **Descrição**: Filtra os ecopontos pelo ID do resíduo, se informado, e pela localização, se informado 
+                (pesquisa termo informado em qualquer um dos campos da localização do ecoponto). 
+                Serão retornados apenas ecopontos ativos e com a situação "aprovado"
+
+            **Parâmetros**:
+                query_args (dict): Argumentos de consulta e para paginação.
+                    - residuo_id (int): ID do resíduo.
+                    - localizacao (str): termo que corresponde a parte de uma localização.
+                    - page (int): Número da página.
+                    - page_size (int): Número de registros por página.
+                    - page_size (int): Número de registros por página.
+
+            **Retorna**:
+                Um objeto JSON com a lista de ecopontos filtrados pelos critérios informados e informações 
+                de paginação.
+        """
 
         result_lista = []
         residuo_id = query_args.get("residuo_id")
         localizacao = query_args.get("localizacao")
 
-        query = EcopontoModel().query.all()
-        set_ids_lista = {ecoponto for ecoponto in query}
-        intersecao_ids = set_ids_lista
-        
-        if localizacao:
+        pagina = int(query_args.get("page", 1))
+        limite = int(query_args.get("page_size", 0))
 
-            # Realiza a consulta para encontrar os ecopontos com base na localizacao
-            query1 = db.session.query(EcopontoModel).join(LocalizacaoModel).filter(
+        query = EcopontoModel.query.filter(EcopontoModel.ativo, EcopontoModel.situacao == "aprovado")
+
+        if localizacao:
+            query = query.join(LocalizacaoModel).filter(
                 or_(
                     LocalizacaoModel.rua.ilike(f'%{localizacao}%'),
                     LocalizacaoModel.numero.ilike(f'%{localizacao}%'),
@@ -290,40 +383,30 @@ class Ecopontos(MethodView):
                     LocalizacaoModel.estado.ilike(f'%{localizacao}%'),
                     LocalizacaoModel.complemento.ilike(f'%{localizacao}%'),
                 )
-            ).all()
-
-            set_ids_lista1 = {ecoponto for ecoponto in query1}
-            intersecao_ids = set_ids_lista.intersection(set_ids_lista1)
-            set_ids_lista = set_ids_lista1
+            )
 
         if residuo_id:
+            residuo = ResiduoModel.query.get_or_404(residuo_id)
+            ecopontos_ids = [ecoponto.id for ecoponto in residuo.ecoponto]
+            query = query.filter(EcopontoModel.id.in_(ecopontos_ids))
 
-            # Pega todos ecopontos do resíduo pesquisado
-            residuo = ResiduoModel().query.get_or_404(residuo_id)
-            query2 = residuo.ecoponto
+        total_registros = query.count()
 
-            # Pega todos ecopontos do resíduo pesquisado, coloca em um grupo para não ter ecoponto duplo
-            set_ids_lista1 = {ecoponto for ecoponto in query2}
+        if limite < 1:
+            limite = total_registros
+        ecopontos = query.offset((pagina - 1) * limite).limit(limite).all()
 
-            # Pega apenas os ecopontos que combinam com as duas pesquisas
-            intersecao_ids = set_ids_lista.intersection(set_ids_lista1)
-
-        for ecoponto in intersecao_ids:
+        for ecoponto in ecopontos:
             ecoponto_schema = EcopontoGetSchema()
             result = ecoponto_schema.dump(ecoponto)
             dias_funcionamento = result.get('dia_funcionamento')
 
-            # extrai valor do enum
             if dias_funcionamento:
                 dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                 result["dia_funcionamento"] = dia_funcionamento
-
-                # agrupa horário de funcionamento em uma única string
                 result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-            # extrai valor do enum
             situacao = result.get("situacao")
-
             if situacao:
                 valor, nome = retira_valor_enumSituacao(situacao)
                 result["situacao_enum"] = nome
@@ -331,20 +414,44 @@ class Ecopontos(MethodView):
             
             result_lista.append(result)
 
+        paginacao = {
+            "total": total_registros,
+            "page": pagina,
+            "page_size": limite,
+            "previous": pagina > 1,
+            "next": total_registros > pagina * limite
+        }
+
         context = {
             "code": 200,
             "status": "OK",
             "message": "",
-            "values": result_lista
+            "values": result_lista,
+            "pagination": paginacao
         }
         
         return jsonify(context)
 
 
     @blp.arguments(EcopontoLocalizacaoSchema)
-    @blp.response(201, RetornoEcopontoLocalizacaoSchema)
+    @blp.response(201, RetornoEcopontoSchema)
     def post(self, ecoponto_data):
+        """
+           Cria um novo ecoponto.
 
+            **Descrição**: Cria um novo ecoponto.
+
+            **Parâmetros**:
+                ecoponto_data : dict
+                Dados recebidos para criar um novo ecoponto.
+
+            **Retorna**:
+                Um objeto JSON contendo:
+                    - code: Código HTTP 201.
+                    - status: Mensagem "Created".
+                    - message: Mensagem vazia.
+                    - value: Informações do ecoponto criado.
+        """
 
         # Dados recebidos:
 
@@ -461,6 +568,14 @@ class Ecopontos(MethodView):
 
 
     def delete(self):
+        """
+            Deleta todos os ecopontos e suas relações associadas.
+
+            **ATENÇÃO**: Deleta **TODOS** os ecopontos e suas relações associadas.
+
+            **Retorna**:
+                Um objeto JSON contendo uma mensagem de confirmação.
+        """
 
         ecopontos = EcopontoModel.query.all()
         funcionamentos = DiaFuncionamentoModel.query.all()
@@ -501,10 +616,37 @@ class Ecopontos(MethodView):
 
 @blp.route("/ecoponto/funcionamento")
 class EcopontoFuncionamento(MethodView):
+    """
+        Endpoint para gerenciar a relação de dias de funcionamento de um ecoponto.
+
+        Este endpoint permite criar ou atualizar a relação de dias de funcionamento 
+        associados a um ecoponto específico.
+
+        Métodos:
+        --------
+        put(ecoponto_data):
+            Atualiza a relação de dias de funcionamento de um ecoponto específico.
+        
+        post(ecoponto_data):
+            Cria a relação de dias de funcionamento de um ecoponto específico.
+    """
 
     @blp.arguments(EcopontoFuncionamentoSchema)
     @blp.response(200, RetornoEcopontoFuncionamentoSchema)
     def put(self, ecoponto_data):
+        """
+            Atualiza relação de dias de funcionamento de um ecoponto.
+
+            **Descrição:** Busca o ecoponto pelo ID  e atualiza a relação de dias de funcionamento.
+                Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_data : dict
+                Dados recebidos contendo o ID do ecoponto e a lista de dias de funcionamento a serem associados.
+
+            **Retorna:**
+                Um objeto JSON com os ids do ecoponto e dos dias de funcionamento relacionados.
+        """
 
         # Dados recebidos:
 
@@ -554,6 +696,7 @@ class EcopontoFuncionamento(MethodView):
                 400,
                 message="Erro ao criar dias de funcionamento do ecoponto.",
             )
+        
         except SQLAlchemyError as error:
             message = f"Error create ecoponto diasfuncionamento: {error}"
             logging.warning(message)
@@ -568,14 +711,10 @@ class EcopontoFuncionamento(MethodView):
         dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
         result["dia_funcionamento"] = dia_funcionamento
 
+
         # agrupa horário de funcionamento em uma única string
         result["funcionamento"] = agrupar_horarios(dias_funcionamento)
 
-        # extrai valor do enum
-        situacao = result.get("situacao")
-        valor, nome = retira_valor_enumSituacao(situacao)
-        result["situacao_enum"] = nome
-        result["situacao"] = valor
         context = {
             "code": 200,
             "status": "OK",
@@ -589,6 +728,19 @@ class EcopontoFuncionamento(MethodView):
     @blp.arguments(EcopontoFuncionamentoSchema)
     @blp.response(201, RetornoEcopontoFuncionamentoSchema)
     def post(self, ecoponto_data):
+        """
+            Cria relação de dias de funcionamento de um ecoponto.
+
+            **Descrição:** Busca o ecoponto pelo ID  e cria a relação de dias de funcionamento.
+                Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_data : dict
+                Dados recebidos contendo o ID do ecoponto e a lista de dias de funcionamento a serem associados.
+
+            **Retorna:**
+                Um objeto JSON com os ids do ecoponto e dos dias de funcionamento relacionados.
+        """
 
         # Dados recebidos:
 
@@ -672,10 +824,37 @@ class EcopontoFuncionamento(MethodView):
 
 @blp.route("/ecoponto/residuo")
 class EcopontoPostResiduo(MethodView):
+    """
+        Endpoint para gerenciar a relação de resíduos de um ecoponto.
+
+        Este endpoint permite criar ou atualizar a relação de resíduos associados a um ecoponto específico.
+
+        Métodos:
+        --------
+        put(ecoponto_data):
+            Atualiza a relação de resíduos de um ecoponto específico.
+        
+        post(ecoponto_data):
+            Cria a relação de resíduos de um ecoponto específico.
+    """
 
     @blp.arguments(EcopontoResiduoSchema)
     @blp.response(200, RetornoEcopontoResiduoSchema)
     def put(self, ecoponto_data):
+        """
+            Atualiza relação de resíduos de um ecoponto.
+
+            **Descrição:** Busca o ecoponto pelo ID, busca cada um dos resíduos pelo iD informado e 
+                atualiza relação com o ecoponto.
+                Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_data : dict
+                Dados recebidos contendo o ID do ecoponto e a lista de resíduos a serem associados.
+
+            **Retorna:**
+                Um objeto JSON com os ids do ecoponto e dos resíduos relacionados.
+        """
 
         # Dados recebidos:
         ecoponto_id = ecoponto_data['ecoponto_id']
@@ -730,6 +909,7 @@ class EcopontoPostResiduo(MethodView):
                 400,
                 message="Erro ao criar relação de residuos do ecoponto.",
             )
+        
         except SQLAlchemyError as error:
             message = f"Error create ecoponto residuos: {error}"
             logging.warning(message)
@@ -769,6 +949,20 @@ class EcopontoPostResiduo(MethodView):
     @blp.arguments(EcopontoResiduoSchema)
     @blp.response(201, RetornoEcopontoResiduoSchema)
     def post(self, ecoponto_data):
+        """
+            Cria relação de resíduos de um ecoponto.
+
+            **Descrição:** Busca o ecoponto pelo ID, busca cada um dos resíduos pelo iD informado e 
+                cria relação com o ecoponto.
+                Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_data : dict
+                Dados recebidos contendo o ID do ecoponto e a lista de resíduos a serem associados.
+
+            **Retorna:**
+                Um objeto JSON com os ids do ecoponto e dos resíduos relacionados.
+        """
 
         # Dados recebidos:
 
@@ -844,9 +1038,51 @@ class EcopontoPostResiduo(MethodView):
 
 @blp.route("/ecoponto/ativar/<int:ecoponto_id>")
 class Ecoponto(MethodView):
+    """
+        Endpoint para ativar um ecoponto específico.
 
-    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+        Este endpoint permite ativar um ecoponto identificado por seu ID, definindo o campo 
+        'ativo' como True.
+
+        Métodos:
+        --------
+        put(ecoponto_id):
+            Ativa o ecoponto especificado pelo ID.
+
+        Parâmetros da URL:
+        -----------------
+        ecoponto_id : int
+            O ID do ecoponto a ser ativado.
+
+        Retorno:
+        --------
+        JSON:
+            Um objeto JSON contendo:
+            - code: Código HTTP 200.
+            - status: Mensagem "OK".
+            - message: Mensagem vazia.
+            - values: Informações do ecoponto desativado, contendo:
+                - dia_funcionamento: Dias de funcionamento formatados.
+                - funcionamento: Horários de funcionamento agrupados.
+                - situacao_enum: Nome da situação.
+                - situacao: Valor da situação.
+    """
+
+    @blp.response(200, RetornoEcopontoSchema)
     def put(self, ecoponto_id):
+        """
+            Ativa o ecoponto especificado pelo ID.
+
+            **Descrição:** Busca o ecoponto pelo ID fornecido e define seu campo 'ativo' como True.
+            Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_id (int): O ID do ecoponto a ser ativado.
+
+            **Retorna:**
+                Um objeto JSON com as informações do ecoponto ativado.
+        """
+
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
 
         # Salva em BD
@@ -904,9 +1140,51 @@ class Ecoponto(MethodView):
 
 @blp.route("/ecoponto/desativar/<int:ecoponto_id>")
 class Ecoponto(MethodView):
+    """
+        Endpoint para desativar um ecoponto específico.
 
-    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+        Este endpoint permite desativar um ecoponto identificado por seu ID, definindo o campo 
+        'ativo' como False.
+
+        Métodos:
+        --------
+        put(ecoponto_id):
+            Desativa o ecoponto especificado pelo ID.
+
+        Parâmetros da URL:
+        -----------------
+        ecoponto_id : int
+            O ID do ecoponto a ser desativado.
+
+        Retorno:
+        --------
+        JSON:
+            Um objeto JSON contendo:
+            - code: Código HTTP 200.
+            - status: Mensagem "OK".
+            - message: Mensagem vazia.
+            - values: Informações do ecoponto desativado, contendo:
+                - dia_funcionamento: Dias de funcionamento formatados.
+                - funcionamento: Horários de funcionamento agrupados.
+                - situacao_enum: Nome da situação.
+                - situacao: Valor da situação.
+    """
+
+    @blp.response(200, RetornoEcopontoSchema)
     def put(self, ecoponto_id):
+        """
+            Desativa o ecoponto especificado pelo ID.
+
+            **Descrição:** Busca o ecoponto pelo ID fornecido e define seu campo 'ativo' como False.
+            Se ocorrer um erro durante a operação de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_id (int): O ID do ecoponto a ser desativado.
+
+            **Retorna:**
+                Um objeto JSON com as informações do ecoponto desativado.
+        """
+                
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
 
         # Salva em BD
@@ -927,6 +1205,7 @@ class Ecoponto(MethodView):
                 400,
                 message="Erro ao desativar ecoponto.",
             )
+        
         except SQLAlchemyError as error:
             message = f"Error deactive ecoponto: {error}"
             logging.warning(message)
@@ -964,16 +1243,61 @@ class Ecoponto(MethodView):
 
 @blp.route("/ecoponto/<string:situacao>/<int:ecoponto_id>")
 class Ecoponto(MethodView):
+    """
+        Endpoint para atualizar a situação de um ecoponto específico.
 
-    @blp.response(200, RetornoEcopontoLocalizacaoSchema)
+        Este endpoint permite atualizar a situação de um ecoponto identificado por seu ID.
+        A situação deve ser uma das seguintes: 'em_analise', 'aprovado' ou 'rejeitado'.
+
+        Métodos:
+        --------
+        put(ecoponto_id, situacao):
+            Atualiza a situação de um ecoponto.
+
+        Parâmetros da URL:
+        -----------------
+        ecoponto_id : int
+            O ID do ecoponto a ser atualizado.
+        situacao : str
+            A nova situação do ecoponto. Deve ser 'em_analise', 'aprovado', 'rejeitado' ou 'desativado'.
+
+        Retorno:
+        --------
+        JSON:
+            Um objeto JSON contendo:
+            - code: Código HTTP 200.
+            - status: Mensagem "OK".
+            - message: Mensagem vazia.
+            - values: Informações do ecoponto atualizado, contendo:
+                - dia_funcionamento: Dias de funcionamento formatados.
+                - funcionamento: Horários de funcionamento agrupados.
+                - situacao_enum: Nome da situação.
+                - situacao: Valor da situação.
+    """
+
+    @blp.response(200, RetornoEcopontoSchema)
     def put(self, situacao, ecoponto_id):
+        """
+             Atualiza a situação de um ecoponto.
+
+            **Descrição:** Busca o ecoponto pelo ID fornecido e atualiza sua situação se a nova situação for válida.
+            Se a situação não for válida, retorna um erro 400. Se ocorrer um erro durante a operação
+            de banco de dados, retorna um erro 400 ou 500.
+
+            **Parâmetros:**
+                ecoponto_id (int): O ID do ecoponto a ser atualizado.
+                situacao (str): A nova situação do ecoponto. ["em_analise", "aprovado", "rejeitado"].
+
+            **Retorna:**
+                Um objeto JSON com as informações do ecoponto atualizado.
+        """
         
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
 
-        if situacao != "em_analise" and situacao != "aprovado" and situacao != "rejeitado" and situacao != "desativado":
+        if situacao != "em_analise" and situacao != "aprovado" and situacao != "rejeitado":
             abort(
                 400,
-                message="status inválido. Status deve ser 'em_analise', 'aprovado', 'rejeitado' ou'desativado'",)
+                message="status inválido. Status deve ser 'em_analise', 'aprovado' ou 'rejeitado'",)
 
         # Salva em BD
         try:
@@ -1029,11 +1353,166 @@ class Ecoponto(MethodView):
         return jsonify(context)
 
 
+@blp.route("/ecoponto/<string:situacao>")
+class Ecoponto(MethodView):
+    """
+        Endpoint para obter ecopontos filtrados por situação com paginação.
+
+        Este endpoint retorna uma lista de ecopontos que correspondem à situação especificada
+        na URL, com suporte a paginação. Cada ecoponto é detalhado com suas informações de
+        funcionamento e situação.
+
+        Métodos:
+        --------
+        get(query_args, situacao):
+            Retorna uma lista paginada de ecopontos filtrados pela situação especificada.
+
+        Parâmetros da URL:
+        -----------------
+        situacao : str
+            A situação dos ecopontos a serem filtrados 
+            (e.g., "aprovado", "rejeitado", "em_analise").
+
+        Parâmetros de Consulta:
+        -----------------------
+        query_args : dict
+            Dicionário de argumentos de consulta contendo:
+            - page: Número da página (padrão é 1).
+            - page_size: Número de registros por página (padrão é 0, que retorna todos).
+
+        Retorno:
+        --------
+        JSON:
+            Um objeto JSON contendo:
+            - code: Código HTTP 200.
+            - status: Mensagem "OK".
+            - message: Mensagem vazia.
+            - values: Lista de ecopontos, cada um contendo:
+                - dia_funcionamento: Dias de funcionamento formatados.
+                - funcionamento: Horários de funcionamento agrupados.
+                - situacao_enum: Nome da situação.
+                - situacao: Valor da situação.
+            - pagination: Informações de paginação, contendo:
+                - total: Número total de registros.
+                - page: Página atual.
+                - page_size: Tamanho da página.
+                - previous: Indicador se há página anterior.
+                - next: Indicador se há próxima página.
+    """
+
+    @blp.arguments(PaginacaoSearchSchema, location="query")
+    @blp.response(200, RetornoListaEcopontoSchema)
+    def get(self, query_args, situacao):
+        """
+            Retorna uma lista paginada de ecopontos filtrados pela situação especificada.
+
+            **Descrição**: Filtra os ecopontos pela situação fornecida na URL, aplica paginação de acordo 
+            com os parâmetros de consulta.
+
+            **Parâmetros**:
+                query_args (dict): Argumentos de consulta para paginação.
+                    - page (int): Número da página.
+                    - page_size (int): Número de registros por página.
+                situacao (str): A situação dos ecopontos a serem filtrados ["em_analise", "aprovado", "rejeitado"].
+
+            **Retorna**:
+                Um objeto JSON com a lista de ecopontos filtrados pela situação e informações 
+                de paginação.
+        """
+
+        
+        result_lista = []
+
+        pagina = int(query_args.get("page", 1))
+        limite = int(query_args.get("page_size", 0))
+
+        query = EcopontoModel().query.filter(EcopontoModel.situacao == situacao)
+
+        total_registros = query.count()
+
+        if limite < 1:
+            limite = total_registros
+        ecopontos = query.offset((pagina - 1) * limite).limit(limite).all()
+
+        for ecoponto in ecopontos:
+            ecoponto_schema = EcopontoGetSchema()
+            result = ecoponto_schema.dump(ecoponto)
+            dias_funcionamento = result.get('dia_funcionamento')
+
+            # extrai valor do enum
+            if dias_funcionamento:
+                dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                result["dia_funcionamento"] = dia_funcionamento
+
+                # agrupa horário de funcionamento em uma única string
+                result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+            # extrai valor do enum
+            situacao = result.get("situacao")
+
+            if situacao:
+                valor, nome = retira_valor_enumSituacao(situacao)
+                result["situacao_enum"] = nome
+                result["situacao"] = valor
+            
+            result_lista.append(result)
+
+
+        paginacao = {
+            "total": total_registros,
+            "page": pagina,
+            "page_size": limite,
+            "previous": pagina > 1,
+            "next": total_registros > pagina * limite
+        }
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result_lista,
+            "pagination": paginacao
+        }
+        
+        return jsonify(context)
+
+
 @blp.route("/ecoponto/situacao")
 class Ecoponto(MethodView):
+    """
+        Endpoint para obter a lista de todas as situações possíveis de um ecoponto.
 
-    @blp.response(200, RetornoEcopontoFuncionamentoSchema)
+        Este endpoint retorna todas as situações definidas no enum `SituacaoEnum`, 
+        com seus respectivos valores e nomes.
+
+        Métodos:
+        --------
+        get:
+            Retorna a lista de todas as situações do ecoponto.
+
+        Retorno:
+        --------
+        JSON:
+            Um objeto JSON contendo:
+            - code: Código HTTP 200.
+            - status: Mensagem "OK".
+            - message: Mensagem vazia.
+            - values: Lista de situações do ecoponto, cada uma contendo:
+                - situacao_enum: Nome da situação.
+                - situacao: Valor da situação.
+    """
+
+    @blp.response(200, RetornoEcopontoSituacaoSchema)
     def get(self):
+        """
+            Retorna a lista de todas as situações possíveis de um ecoponto.
+
+            **Descrição**: Consulta o enum `SituacaoEnum` para obter todas as situações, 
+            formata cada situação em um dicionário.
+
+            **Retorna**:
+                Um objeto JSON com a lista de todas as situações do ecoponto:
+                valor do enumerador e o valor para apresentar ao usuário
+        """
 
         result_list = []
 
