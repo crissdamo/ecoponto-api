@@ -191,17 +191,39 @@ class RetornoEcopontoSchema(RetornoSchema):
     value = fields.Nested(EcopontoGetSchema())
 
 
-# ecoponto lista: classe com a representação padronizada de saída
+# ecoponto lista: classe com a representação padronizada de saída: ecoponto completo
 class RetornoListaEcopontoSchema(RetornoSchema):
     Values = fields.List(fields.Nested(EcopontoGetSchema()), dump_only=True)
     pagination = fields.List(fields.Nested(PaginacaoSchema()), dump_only=True)
 
 
+# ecoponto lista: classe com a representação padronizada de saída: ecoponto + localiação
+class RetornoListaEcopontoLocalizacaoSchema(RetornoSchema):
+    Values = fields.List(fields.Nested(EcopontoLocalizacaoSchema()), dump_only=True)
+    pagination = fields.List(fields.Nested(PaginacaoSchema()), dump_only=True)
+
+
+# listas de ecoponto por situação
+class EcopontoLista(Schema):
+    ecopontos = fields.List(fields.Nested(EcopontoLocalizacaoSchema))
+    total = fields.Int()
+
+class EcopontoPorSituacaoSchema(Schema):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Adiciona um campo para cada enumeração em SituacaoEnum
+        for situacao in SituacaoEnum:
+            self.fields[situacao.name] = fields.Nested(EcopontoLista)
+   
+class EcopontoListaSituacaoSchema(RetornoSchema):
+    values = fields.Nested(EcopontoPorSituacaoSchema)
+  
+    
+
 # Schema dos dados da situacao ecoponto
 class EcopontoSituacaoSchema(Schema):
     situacao = fields.Str(required=False)
     situacao_enum = fields.Str(required=False)
-
 
 class RetornoEcopontoSituacaoSchema(RetornoSchema):
     value = fields.Nested(EcopontoSituacaoSchema())

@@ -19,6 +19,7 @@ from models.residuo import ResiduoModel
 from schemas.empresa_ecoponto import (
     EcopontoFuncionamentoSchema,
     EcopontoGetSchema,
+    EcopontoListaSituacaoSchema,
     EcopontoLocalizacaoSchema,
     EcopontoLocalizacaoUpdateSchema, 
     EcopontoResiduoSchema,
@@ -28,7 +29,9 @@ from schemas.empresa_ecoponto import (
     RetornoEcopontoSchema,
     RetornoEcopontoResiduoSchema,
     RetornoEcopontoSituacaoSchema,
-    RetornoListaEcopontoSchema)
+    RetornoListaEcopontoLocalizacaoSchema,
+    RetornoListaEcopontoSchema,
+)
 from schemas.paginacao import PaginacaoSearchSchema
 
 blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
@@ -823,7 +826,7 @@ class EcopontoFuncionamento(MethodView):
 
 
 @blp.route("/ecoponto/residuo")
-class EcopontoPostResiduo(MethodView):
+class EcopontoResiduo(MethodView):
     """
         Endpoint para gerenciar a relação de resíduos de um ecoponto.
 
@@ -1037,7 +1040,7 @@ class EcopontoPostResiduo(MethodView):
 
 
 @blp.route("/ecoponto/ativar/<int:ecoponto_id>")
-class Ecoponto(MethodView):
+class EcopontoAtiva(MethodView):
     """
         Endpoint para ativar um ecoponto específico.
 
@@ -1139,7 +1142,7 @@ class Ecoponto(MethodView):
 
 
 @blp.route("/ecoponto/desativar/<int:ecoponto_id>")
-class Ecoponto(MethodView):
+class EcopontoDesativa(MethodView):
     """
         Endpoint para desativar um ecoponto específico.
 
@@ -1242,7 +1245,7 @@ class Ecoponto(MethodView):
 
 
 @blp.route("/ecoponto/<string:situacao>/<int:ecoponto_id>")
-class Ecoponto(MethodView):
+class EcopontoPutSituacao(MethodView):
     """
         Endpoint para atualizar a situação de um ecoponto específico.
 
@@ -1354,7 +1357,7 @@ class Ecoponto(MethodView):
 
 
 @blp.route("/ecoponto/<string:situacao>")
-class Ecoponto(MethodView):
+class EcopontoGetSituacao(MethodView):
     """
         Endpoint para obter ecopontos filtrados por situação com paginação.
 
@@ -1401,7 +1404,7 @@ class Ecoponto(MethodView):
     """
 
     @blp.arguments(PaginacaoSearchSchema, location="query")
-    @blp.response(200, RetornoListaEcopontoSchema)
+    @blp.response(200, RetornoListaEcopontoLocalizacaoSchema)
     def get(self, query_args, situacao):
         """
             Retorna uma lista paginada de ecopontos filtrados pela situação especificada.
@@ -1420,13 +1423,18 @@ class Ecoponto(MethodView):
                 de paginação.
         """
 
+        if situacao != "em_analise" and situacao != "aprovado" and situacao != "rejeitado":
+            abort(
+                400,
+                message="status inválido. Status deve ser 'em_analise', 'aprovado' ou 'rejeitado'",)
+
         
         result_lista = []
 
         pagina = int(query_args.get("page", 1))
         limite = int(query_args.get("page_size", 0))
 
-        query = EcopontoModel().query.filter(EcopontoModel.situacao == situacao)
+        query = EcopontoModel.query.filter(EcopontoModel.situacao == situacao)
 
         total_registros = query.count()
 
@@ -1435,7 +1443,7 @@ class Ecoponto(MethodView):
         ecopontos = query.offset((pagina - 1) * limite).limit(limite).all()
 
         for ecoponto in ecopontos:
-            ecoponto_schema = EcopontoGetSchema()
+            ecoponto_schema = EcopontoLocalizacaoSchema()
             result = ecoponto_schema.dump(ecoponto)
             dias_funcionamento = result.get('dia_funcionamento')
 
@@ -1477,7 +1485,7 @@ class Ecoponto(MethodView):
 
 
 @blp.route("/ecoponto/situacao")
-class Ecoponto(MethodView):
+class EcopontoSituacao(MethodView):
     """
         Endpoint para obter a lista de todas as situações possíveis de um ecoponto.
 
@@ -1535,3 +1543,79 @@ class Ecoponto(MethodView):
         
         return jsonify(context)
 
+
+@blp.route("/ecoponto/controle")
+class EcopontoControle(MethodView):
+    """
+        Endpoint para obter listas de todos os ecopontos separados por situação.
+
+        Este endpoint retorna todas os ecopontos separados em listas por situação
+
+        Métodos:
+        --------
+        get:
+            Retorna listas de ecopontos por situação.
+
+        Retorno:
+        --------
+        JSON:
+            Um objeto JSON contendo:
+            - code: Código HTTP 200.
+            - status: Mensagem "OK".
+            - message: Mensagem vazia.
+            - values: Lista de situações do ecoponto, cada uma contendo:
+                - situacao_enum: Nome da situação.
+                - situacao: Valor da situação.
+    """
+
+    @blp.response(200, EcopontoListaSituacaoSchema)
+    def get(self):
+
+        """
+            Retorna uma lista de todos os ecopontos, agrupados por situação.
+
+            **Descrição:** Recupera todos os ecopontos do banco de dados, organiza-os por suas situações
+             e retorna um resumo contendo o total
+            de ecopontos em cada situação e uma lista detalhada dos ecopontos.
+
+            **Retorna:**
+                Um objeto JSON contendo o código de status, a mensagem, e os dados agrupados 
+                por situação, incluindo o total de ecopontos e detalhes de cada ecoponto.
+
+            
+        """
+
+        result_dict = {}
+        ecopontos = EcopontoModel.query.all()
+
+        for situacao in SituacaoEnum:
+            result_dict[situacao.name] = {"total": 0, "ecopontos": []}
+   
+        for ecoponto in ecopontos:
+            ecoponto_schema = EcopontoLocalizacaoSchema()
+            result = ecoponto_schema.dump(ecoponto)
+            dias_funcionamento = result.get('dia_funcionamento')
+
+            if dias_funcionamento:
+                dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
+                result["dia_funcionamento"] = dia_funcionamento
+                result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+
+            situacao = result.get("situacao")
+            if situacao:
+                valor, nome = retira_valor_enumSituacao(situacao)
+                result["situacao_enum"] = nome
+                result["situacao"] = valor
+
+                result_dict[nome]['total'] += 1
+                result_dict[nome]['ecopontos'].append(result)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result_dict,
+        }
+        
+        return jsonify(context)
+        
