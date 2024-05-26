@@ -203,10 +203,21 @@ class RetornoListaEcopontoLocalizacaoSchema(RetornoSchema):
     pagination = fields.List(fields.Nested(PaginacaoSchema()), dump_only=True)
 
 
+
+# Schema dos dados da situacao ecoponto
+class EcopontoSituacaoSchema(Schema):
+    situacao = fields.Str(required=False)
+    situacao_enum = fields.Str(required=False)
+
+class RetornoEcopontoSituacaoSchema(RetornoSchema):
+    value = fields.Nested(EcopontoSituacaoSchema())
+
+
 # listas de ecoponto por situação
-class EcopontoLista(Schema):
+class EcopontoLista(EcopontoSituacaoSchema):
     ecopontos = fields.List(fields.Nested(EcopontoLocalizacaoSchema))
     total = fields.Int()
+
 
 class EcopontoPorSituacaoSchema(Schema):
     def __init__(self, *args, **kwargs):
@@ -219,11 +230,3 @@ class EcopontoListaSituacaoSchema(RetornoSchema):
     values = fields.Nested(EcopontoPorSituacaoSchema)
   
     
-
-# Schema dos dados da situacao ecoponto
-class EcopontoSituacaoSchema(Schema):
-    situacao = fields.Str(required=False)
-    situacao_enum = fields.Str(required=False)
-
-class RetornoEcopontoSituacaoSchema(RetornoSchema):
-    value = fields.Nested(EcopontoSituacaoSchema())

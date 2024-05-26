@@ -1589,7 +1589,7 @@ class EcopontoControle(MethodView):
         ecopontos = EcopontoModel.query.all()
 
         for situacao in SituacaoEnum:
-            result_dict[situacao.name] = {"total": 0, "ecopontos": []}
+            result_dict[situacao.name] = {"total": 0, "situacao":situacao.value, "situacao_enum": situacao.name, "ecopontos": []}
    
         for ecoponto in ecopontos:
             ecoponto_schema = EcopontoLocalizacaoSchema()
