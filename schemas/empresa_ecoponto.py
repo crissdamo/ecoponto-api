@@ -219,14 +219,14 @@ class EcopontoLista(EcopontoSituacaoSchema):
     total = fields.Int()
 
 
-class EcopontoPorSituacaoSchema(Schema):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Adiciona um campo para cada enumeração em SituacaoEnum
-        for situacao in SituacaoEnum:
-            self.fields[situacao.name] = fields.Nested(EcopontoLista)
+# class EcopontoPorSituacaoSchema(Schema):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Adiciona um campo para cada enumeração em SituacaoEnum
+#         for situacao in SituacaoEnum:
+#             self.fields[situacao.name] = fields.Nested(EcopontoLista)
    
 class EcopontoListaSituacaoSchema(RetornoSchema):
-    values = fields.Nested(EcopontoPorSituacaoSchema)
+    values = fields.List(fields.Nested(EcopontoLista))
   
     

@@ -1585,6 +1585,7 @@ class EcopontoControle(MethodView):
             
         """
 
+        result_list = []
         result_dict = {}
         ecopontos = EcopontoModel.query.all()
 
@@ -1610,11 +1611,14 @@ class EcopontoControle(MethodView):
                 result_dict[nome]['total'] += 1
                 result_dict[nome]['ecopontos'].append(result)
 
+        for result in result_dict:
+            result_list.append(result_dict[result])
+            
         context = {
             "code": 200,
             "status": "OK",
             "message": "",
-            "values": result_dict,
+            "values": result_list,
         }
         
         return jsonify(context)
