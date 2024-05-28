@@ -2,6 +2,7 @@ from marshmallow import Schema, fields, validate
 from models.enums.dia_semana import DiasSemanaEnum
 from models.enums.situacao_ecoponto import SituacaoEnum
 from schemas.categoria_residuo import ItemResiduoSchema, PlainResiduoSchema
+from schemas.paginacao import PaginacaoSchema, PaginacaoSearchSchema
 from schemas.termo import AceiteTermoSchema
 
 
@@ -151,50 +152,81 @@ class RetornoListaEmpresaSchema(RetornoSchema):
     Values = fields.List(fields.Nested(EmpresaGetSchema()), dump_only=True)
 
 
-
-# ecoponto lista: classe com a representação padronizada de saída
-class RetornoListaEcopontoSchema(RetornoSchema):
-    Values = fields.List(fields.Nested(EcopontoGetSchema()), dump_only=True)
-
-
+# argumentos de pesquisa
+class EcopontoSearchSchema(PaginacaoSearchSchema):
+    residuo_id = fields.Int(required=False)
+    localizacao = fields.Str(required=False)
+    
 
 # Ecoponto + localizacao
 class EcopontoLocalizacaoSchema(PlainEcopontoSchema):
     empresa_id = fields.Int(required=True)
     localizacao = fields.List(fields.Nested(PlainLocalizacaoSchema()))
   
-  
 class EcopontoLocalizacaoUpdateSchema(PlainEcopontoUpdateSchema):
     empresa_id = fields.Int(required=False)
     localizacao = fields.List(fields.Nested(PlainLocalizacaoUpdateSchema()))
   
   
-class RetornoEcopontoLocalizacaoSchema(RetornoSchema):
-    value = fields.Nested(EcopontoLocalizacaoSchema())
-  
-  
-
 # Ecoponto + dia funcionamento
 class EcopontoFuncionamentoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=True)
     
-
 class RetornoEcopontoFuncionamentoSchema(RetornoSchema):
-    value = fields.Nested(EcopontoLocalizacaoSchema())
+    value = fields.Nested(EcopontoFuncionamentoSchema())
   
 
 # Ecoponto + resíduo
 class EcopontoResiduoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
-    # descricao_outros_projetos = fields.Str(required=True)
     residuo = fields.List(fields.Nested(ItemResiduoSchema), required=True)
-    
+
 class RetornoEcopontoResiduoSchema(RetornoSchema):
     Values = fields.Nested(EcopontoResiduoSchema())
   
 
-# argumentos d epesquisa
-class EcopontoSearchSchema(Schema):
-    residuo_id = fields.Int(required=False)
-    localizacao = fields.Str(required=False)
+# único ecoponto
+class RetornoEcopontoSchema(RetornoSchema):
+    value = fields.Nested(EcopontoGetSchema())
+
+
+# ecoponto lista: classe com a representação padronizada de saída: ecoponto completo
+class RetornoListaEcopontoSchema(RetornoSchema):
+    Values = fields.List(fields.Nested(EcopontoGetSchema()), dump_only=True)
+    pagination = fields.List(fields.Nested(PaginacaoSchema()), dump_only=True)
+
+
+# ecoponto lista: classe com a representação padronizada de saída: ecoponto + localiação
+class RetornoListaEcopontoLocalizacaoSchema(RetornoSchema):
+    Values = fields.List(fields.Nested(EcopontoLocalizacaoSchema()), dump_only=True)
+    pagination = fields.List(fields.Nested(PaginacaoSchema()), dump_only=True)
+
+
+
+# Schema dos dados da situacao ecoponto
+class EcopontoSituacaoSchema(Schema):
+    situacao = fields.Str(required=False)
+    situacao_enum = fields.Str(required=False)
+
+class RetornoEcopontoSituacaoSchema(RetornoSchema):
+    value = fields.Nested(EcopontoSituacaoSchema())
+
+
+# listas de ecoponto por situação
+class EcopontoLista(EcopontoSituacaoSchema):
+    ecopontos = fields.List(fields.Nested(EcopontoLocalizacaoSchema))
+    total = fields.Int()
+
+
+# class EcopontoPorSituacaoSchema(Schema):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Adiciona um campo para cada enumeração em SituacaoEnum
+#         for situacao in SituacaoEnum:
+#             self.fields[situacao.name] = fields.Nested(EcopontoLista)
+   
+class EcopontoListaSituacaoSchema(RetornoSchema):
+    values = fields.List(fields.Nested(EcopontoLista))
+  
+    
