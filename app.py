@@ -33,6 +33,21 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["API_SPEC_OPTIONS"] = {
+        "components": {
+            "securitySchemes": {
+                "Bearer Auth": {
+                    "type": "apiKey",
+                    "in": "header",
+                    "name": "Authorization",
+                    "bearerFormat": "JWT",
+                    "description": "Enter: **'Bearer &lt;JWT&gt;'**, where JWT is the access token",
+                }
+            }
+        },
+    }
+
+
 
     db.init_app(app)
     CORS(app)
@@ -43,15 +58,23 @@ def create_app(db_url=None):
     app.config["JWT_SECRET_KEY"] = db_url or os.getenv("JWT_SECRET_KEY")
     jwt = JWTManager(app)
 
+
+
+
     @jwt.token_in_blocklist_loader
     def check_if_token_in_blocklist(jwt_header, jwt_payload):
         return jwt_payload["jti"] in BLOCKLIST
 
     @jwt.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_payload):
+        
         return (
             jsonify(
-                {"description": "The token has been revoked.", "error": "token_revoked"}
+                {
+                    "code": 401,
+                    "status": "Unauthorized",
+                    "message": "Token inválido",
+                }
             ),
             401,
         )
@@ -61,24 +84,24 @@ def create_app(db_url=None):
         return (
             jsonify(
                 {
-                    "description": "The token is not fresh.",
-                    "error": "fresh_token_required",
+                    "code": 401,
+                    "status": "Unauthorized",
+                    "message": "Token prcisa ser atualizado",
                 }
             ),
             401,
         )
 
-    @jwt.additional_claims_loader
-    def add_claims_to_jwt(identity):
-        # Look in the database and see whether the user is an admin
-        if identity == 1:
-            return {"is_admin": True}
-        return {"is_admin": False}
-
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
         return (
-            jsonify({"message": "The token has expired.", "error": "token_expired"}),
+            jsonify(
+                {
+                    "code": 401,
+                    "status": "Unauthorized",
+                    "message": "Token expirou. ",
+                }
+            ),
             401,
         )
 
@@ -86,7 +109,11 @@ def create_app(db_url=None):
     def invalid_token_callback(error):
         return (
             jsonify(
-                {"message": "Signature verification failed.", "error": "invalid_token"}
+                                {
+                    "code": 401,
+                    "status": "Unauthorized",
+                    "message": "Falha na verificação da assinatura.",
+                }
             ),
             401,
         )
@@ -96,13 +123,16 @@ def create_app(db_url=None):
         return (
             jsonify(
                 {
-                    "description": "Request does not contain an access token.",
-                    "error": "authorization_required",
+                    "code": 401,
+                    "status": "Unauthorized",
+                    "message": "A solicitação não contém um token de acesso. ",
                 }
             ),
             401,
         )
     
+
+
 
     api.register_blueprint(UsuarioBlueprint)
     api.register_blueprint(EmpresaBlueprint)
@@ -115,4 +145,5 @@ def create_app(db_url=None):
 
         
     
+
     return app

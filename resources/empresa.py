@@ -1,6 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from flask import jsonify
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 from passlib.hash import pbkdf2_sha256
 from models.aceite_termo import TermoAceiteModel
 from models.dia_funcionamento import DiaFuncionamentoModel
@@ -15,6 +16,7 @@ from models.residuo import ResiduoModel
 from models.termo import TermoModel
 from models.usuario import UsuarioModel
 from resources.ecoponto import agrupar_horarios, retira_valor_enumSituacao, transforma_dia_funcionamento
+from security import jwt_required_with_doc
 from schemas.empresa_ecoponto import (
     EmpresaGetSchema, EmpresaSchema, 
     PlainEmpresaSchema, 
@@ -37,8 +39,15 @@ blp = Blueprint("Empresas", "empresas", description="Operations on empresas")
 @blp.route("/empresa/<int:empresa_id>")
 class Empresa(MethodView):
 
+    # @jwt_required_with_doc()
     @blp.response(200, RetornoEmpresaGetSchema)
     def get(self, empresa_id):
+        # jwt = get_jwt()
+        # current_user = get_jwt_identity()
+
+        # print(jwt)
+        # print(current_user)
+
         empresa = EmpresaModel().query.get_or_404(empresa_id)
         empresa_schema = EmpresaGetSchema()
         result = empresa_schema.dump(empresa)

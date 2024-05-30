@@ -14,6 +14,7 @@ from models import UsuarioModel
 from models.empresa import EmpresaModel
 from models.perfil_usuario import PerfilUsuarioModel
 from schemas.usuario import PlainUsuarioLoginSchema, UsuarioReturnSchema, UsuarioReturnTokenSchema, UsuarioSchema
+from security import jwt_required_with_doc
 from utilities.apenas_digitos import apenas_digitos
 from utilities.valida_telefone import validar_telefone
 
@@ -281,8 +282,6 @@ class UsuarioLogin(MethodView):
         ).first()
 
         if usuario and pbkdf2_sha256.verify(senha, usuario.senha):
-            access_token = create_access_token(identity=usuario.id, fresh=True)
-            refresh_token = create_refresh_token(identity=usuario.id)
 
             perfil_usuario = PerfilUsuarioModel.query.filter(
                 PerfilUsuarioModel.usuario == usuario
@@ -292,9 +291,24 @@ class UsuarioLogin(MethodView):
             nome_fantasia = None
             empresa = EmpresaModel.query.filter(EmpresaModel.usuario == usuario).first()
             if empresa:
-                empresa_id = None
-                nome_fantasia = None
-  
+                empresa_id = empresa.id
+                nome_fantasia = empresa.nome_fantasia
+            
+            dados_usuario = {
+                "sistema": usuario.sistema,
+                "equipe": usuario.equipe,
+                "admin": usuario.admin,
+                "ativo": usuario.ativo,
+                "empresa_id": empresa_id
+            }
+
+            access_token = create_access_token(
+                identity=usuario.id, 
+                additional_claims=dados_usuario, 
+                fresh=True
+            )
+            refresh_token = create_refresh_token(identity=usuario.id)
+
 
             usuario_schema = UsuarioSchema()
             result = usuario_schema.dump(usuario)
@@ -318,18 +332,18 @@ class UsuarioLogin(MethodView):
         abort(401, message="Credenciais inválidas.")
 
 
-# @blp.route("/refresh")
-# class TokenRefresh(MethodView):
-#     @jwt_required(refresh=True)
-#     def post(self):
-#         usuario_atual = get_jwt_identity()
-#         novo_token = create_access_token(identity=usuario_atual, fresh=False)
-#         return {"access_token": novo_token}
+@blp.route("/refresh")
+class TokenRefresh(MethodView):
+    @jwt_required_with_doc(refresh=True)
+    def post(self):
+        usuario_atual = get_jwt_identity()
+        novo_token = create_access_token(identity=usuario_atual, fresh=False)
+        return {"access_token": novo_token}
 
 
 @blp.route("/logout")
 class usuarioLogout(MethodView):
-    @jwt_required()
+    @jwt_required_with_doc()
     def post(self):
         jti = get_jwt()["jti"]
         BLOCKLIST.add(jti)
