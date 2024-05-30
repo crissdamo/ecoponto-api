@@ -313,7 +313,6 @@ class UsuarioLogin(MethodView):
             usuario_schema = UsuarioSchema()
             result = usuario_schema.dump(usuario)
             result["nome"] = perfil_usuario.nome
-            result["telefone"] = perfil_usuario.telefone
             result["equipe"] = usuario.equipe
             result["admin"] = usuario.admin
             result["sistema"] = usuario.sistema
