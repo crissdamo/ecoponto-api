@@ -40,7 +40,7 @@ def create_app(db_url=None):
     migrate = Migrate(app, db)
 
     api = Api(app)
-    app.config["JWT_SECRET_KEY"] = "fkc7OxB243axPAtwn8PV3tlFRemHvjwGs2ECMTMbQQuNNwSi"
+    app.config["JWT_SECRET_KEY"] = db_url or os.getenv("JWT_SECRET_KEY")
     jwt = JWTManager(app)
 
     @jwt.token_in_blocklist_loader

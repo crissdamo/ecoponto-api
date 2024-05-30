@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, validate
 from models.enums.dia_semana import DiasSemanaEnum
 from models.enums.situacao_ecoponto import SituacaoEnum
-from schemas.categoria_residuo import ItemResiduoSchema, PlainResiduoSchema
+from schemas.categoria_residuo import ItemResiduoSchema, PlainResiduoSchema, RetornoSchema
 from schemas.paginacao import PaginacaoSchema, PaginacaoSearchSchema
 from schemas.termo import AceiteTermoSchema
 
@@ -123,13 +123,6 @@ class EmpresaSchema(PlainEmpresaSchema):
 # Empresa + ecoponto
 class EmpresaGetSchema(PlainEmpresaSchema):
     ecopontos = fields.List(fields.Nested(EcopontoGetSchema()), required=False )
-
-
-# retorno: classe com a representação padronizada de saída
-class RetornoSchema(Schema):
-    code = fields.Str(default='200', dump_only=True)
-    status = fields.Str(default='OK', dump_only=True)
-    message = fields.Str( dump_only=True)
 
 
 # empresa: classe com a representação padronizada de saída
