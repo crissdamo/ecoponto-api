@@ -34,7 +34,7 @@ from schemas.empresa_ecoponto import (
 )
 from schemas.paginacao import PaginacaoSearchSchema
 
-blp = Blueprint("Ecopontos", "ecopontos", description="Operations on ecopontos")
+blp = Blueprint("Ecopontos", "ecopontos", description="Operações sobre ecopontos")
 
 def retira_valor_enumSituacao(valor):
     enum = str(valor).split('.')
@@ -1549,23 +1549,14 @@ class EcopontoControle(MethodView):
     """
         Endpoint para obter listas de todos os ecopontos separados por situação.
 
-        Este endpoint retorna todas os ecopontos separados em listas por situação
+        Rota:
+        /ecoponto/controle
 
         Métodos:
         --------
         get:
             Retorna listas de ecopontos por situação.
 
-        Retorno:
-        --------
-        JSON:
-            Um objeto JSON contendo:
-            - code: Código HTTP 200.
-            - status: Mensagem "OK".
-            - message: Mensagem vazia.
-            - values: Lista de situações do ecoponto, cada uma contendo:
-                - situacao_enum: Nome da situação.
-                - situacao: Valor da situação.
     """
 
     @blp.response(200, EcopontoListaSituacaoSchema)

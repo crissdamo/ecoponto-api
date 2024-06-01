@@ -33,7 +33,7 @@ from utilities.valida_email import validar_email
 from utilities.valida_cnpj import validar_cnpj
 from utilities.valida_telefone import validar_telefone
 
-blp = Blueprint("Empresas", "empresas", description="Operations on empresas")
+blp = Blueprint("Empresas", "empresas", description="Operações sobre empresas")
 
 
 @blp.route("/empresa/<int:empresa_id>")

@@ -18,6 +18,7 @@ from resources.empresa import blp as EmpresaBlueprint
 from resources.ecoponto import blp as EcopontoBlueprint
 from resources.categoria import blp as CategoriaBlueprint
 from resources.residuo import blp as ResiduoBlueprint
+from resources.publicacao import blp as PublicacaoBlueprint
 
 
 def create_app(db_url=None):
@@ -136,10 +137,11 @@ def create_app(db_url=None):
 
     api.register_blueprint(UsuarioBlueprint)
     api.register_blueprint(EmpresaBlueprint)
-    api.register_blueprint(TermoBlueprint)
     api.register_blueprint(EcopontoBlueprint)
     api.register_blueprint(CategoriaBlueprint)
     api.register_blueprint(ResiduoBlueprint)
+    api.register_blueprint(PublicacaoBlueprint)
+    api.register_blueprint(TermoBlueprint)
     
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
