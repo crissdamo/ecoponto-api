@@ -202,8 +202,6 @@ class Publicacoes(MethodView):
         post(publicacao_data):
             Cria um novo publicação.
         
-        delete():
-            Deleta todos os publicacoes e suas relações associadas.
     """
     
     @blp.arguments(PublicacaoSearchSchema, location="query")

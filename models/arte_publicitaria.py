@@ -12,7 +12,6 @@ class ArtePublicitariaModel(db.Model):
     data_inicio = db.Column(db.Date, default=datetime.now().date())
     data_final = db.Column(db.Date, default=(datetime.now() + timedelta(days=12000)).date())
     ativo = db.Column(db.Boolean, default=True)
-    ativo = db.Column(db.Boolean, default=True)
 
     residuo_id = db.Column(db.Integer, db.ForeignKey("residuo.id"), unique=False, nullable=True)
     residuo = db.relationship("ResiduoModel", back_populates="arte_publicitaria")

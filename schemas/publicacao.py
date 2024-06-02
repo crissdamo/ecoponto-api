@@ -1,5 +1,4 @@
-from marshmallow import Schema, fields, validate
-from models.enums.situacao_ecoponto import SituacaoEnum
+from marshmallow import Schema, fields
 from schemas.paginacao import PaginacaoSchema, PaginacaoSearchSchema
 from schemas.retorno import RetornoSchema
 
