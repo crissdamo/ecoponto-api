@@ -222,7 +222,7 @@ class Ecoponto(MethodView):
         return jsonify(context)
 
 
-    @blp.arguments(EcopontoLocalizacaoUpdateSchema)
+    @blp.arguments(EcopontoLocalizacaoResiduoSchema)
     @blp.response(200, RetornoEcopontoSchema)
     def put(self, ecoponto_data, ecoponto_id):
         """
@@ -250,6 +250,7 @@ class Ecoponto(MethodView):
         ecoponto.data_inicio = ecoponto_data.get('data_inicio')
         ecoponto.data_final = ecoponto_data.get('data_final')
         localizacao = ecoponto_data.get('localizacao')
+        residuos = ecoponto_data.get('residuo')
 
         localizacao_obj = None
         if localizacao:
@@ -269,12 +270,44 @@ class Ecoponto(MethodView):
             localizacao_obj.latitude=latitude,
             localizacao_obj.longitude=longitude,
             localizacao_obj.url_localizacao=url_localizacao,
-                     
+        
+        residuos_list = []
+        residuos_relacionados = EcopontoResiduoModel.query.filter(
+            EcopontoResiduoModel.ecoponto_id == ecoponto_id)
+
         # Salva em BD
         try:
             db.session.add(ecoponto)
+
             if localizacao_obj:
                 db.session.add(localizacao_obj)
+
+            if residuos:
+                for residuo in residuos:
+                    
+                    id_residuo = residuo.get('id')
+                    residuos_list.append(id_residuo)
+
+                    residuo_object = ResiduoModel().query.get_or_404(id_residuo)
+
+                    residuo_ecoponto = EcopontoResiduoModel.query.filter(
+                        EcopontoResiduoModel.residuo_id == id_residuo,
+                        EcopontoResiduoModel.ecoponto_id == ecoponto_id,
+                    ).first()
+
+                    if not residuo_ecoponto:
+                        
+                        ecoponto_residuo = EcopontoResiduoModel(
+                            residuo_id=residuo_object.id,
+                            ecoponto_id=ecoponto_id
+                        )
+                        db.session.add(ecoponto_residuo)                
+
+            if residuos_relacionados:
+
+                for item in residuos_relacionados:
+                    if item.residuo_id not in residuos_list:
+                        db.session.delete(item)
 
             db.session.commit()
 
@@ -294,7 +327,7 @@ class Ecoponto(MethodView):
             logging.warning(message)
             abort(500, message="Server Error.")
 
-        ecoponto_schema = EcopontoLocalizacaoSchema()
+        ecoponto_schema = EcopontoGetSchema()
         result = ecoponto_schema.dump(ecoponto)
 
         dias_funcionamento = result.get('dia_funcionamento')
@@ -867,7 +900,6 @@ class EcopontoResiduo(MethodView):
         residuos = ecoponto_data.get('residuo')
         residuos_list = []
 
-        # Cria objetos:
         ecoponto = EcopontoModel().query.get_or_404(ecoponto_id)
         residuos_relacionados = EcopontoResiduoModel.query.filter(EcopontoResiduoModel.ecoponto_id == ecoponto_id)
 

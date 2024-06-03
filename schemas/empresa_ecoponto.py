@@ -167,6 +167,11 @@ class EcopontoLocalizacaoUpdateSchema(PlainEcopontoUpdateSchema):
     localizacao = fields.List(fields.Nested(PlainLocalizacaoUpdateSchema()))
   
   
+class EcopontoLocalizacaoResiduoUpdateSchema(PlainEcopontoUpdateSchema):
+    empresa_id = fields.Int(required=False)
+    localizacao = fields.List(fields.Nested(PlainLocalizacaoUpdateSchema()))
+  
+  
 # Ecoponto + dia funcionamento
 class EcopontoFuncionamentoSchema(Schema):
     ecoponto_id = fields.Int(required=True)
