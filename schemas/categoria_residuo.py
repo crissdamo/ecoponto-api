@@ -38,15 +38,13 @@ class PlainResiduoSchema(Schema):
     # categorias = fields.List(fields.Nested(ItemCategoriaSchema), required=False)
     
 
-class CategoriaSchema(PlainResiduoSchema):
+class CategoriaSchema(PlainCategoriaSchema):
     residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
    
 
 class RetornoCategoriaSchema(RetornoSchema):
     values= fields.Nested(CategoriaSchema())
   
-
-
 
 class ResiduoSchema(PlainResiduoSchema):
     categoria = fields.List(fields.Nested(PlainCategoriaSchema), required=True)

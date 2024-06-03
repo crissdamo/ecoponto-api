@@ -70,9 +70,6 @@ class Categoria(MethodView):
     def put(self, categoria_data, categoria_id):
 
         categoria = CategoriaModel().query.get_or_404(categoria_id)
-        # Dados recebidos:
-
-        
         descricao = categoria_data['descricao']
         categoria.descricao = descricao
         categoria.icone = categoria_data.get('icone')

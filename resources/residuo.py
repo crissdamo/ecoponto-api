@@ -14,7 +14,7 @@ blp = Blueprint("Resíduos", "resíduos", description="Operações sobre resídu
 
 
 @blp.route("/residuo/<int:residuo_id>")
-class Residuos(MethodView):
+class Residuo(MethodView):
 
     @blp.response(200, RetornoResiduoSchema)
     def get(self, residuo_id):
@@ -32,112 +32,115 @@ class Residuos(MethodView):
         
         return jsonify(context)
 
-
-    # @blp.arguments(ResiduoPostSchema)
-    # @blp.response(200, RetornoResiduoSchema)
-    # def put(self, residuo_data, residuo_id):
-        
-    #     residuo = ResiduoModel().query.get_or_404(residuo_id)
-    #     descricao = residuo_data['descricao']
-    #     residuo.descricao = descricao
-    #     residuo.icone = residuo_data.get('icone')
-    #     residuo.url_midia = residuo_data.get('url_midia')
-    #     residuo.recolhido_em_ecoponto = residuo_data.get('recolhido_em_ecoponto')
-    #     categorias = residuo_data.get('categoria')
-
-    #     # validações:
-    #     if ResiduoModel.query.filter(ResiduoModel.descricao == descricao, ResiduoModel.id != residuo_id).first():
-    #         abort(409, message="Resíduo com essa descrição já existe")
-
-    #     # Salva em BD
-    #     try:
-    #         db.session.add(residuo)
-           
-    #         if categorias:
-    #             for categoria in categorias:
-    #                 categoria_id = categoria.get('id')
-    #                 categoriao_object = CategoriaModel().query.get_or_404(categoria_id)
-
-    #                 categoria_residuo = CategoriaResiduoModel(
-    #                     residuo_id=residuo.id,
-    #                     categoria_id=categoriao_object.id
-    #                 )
-    #                 db.session.add(categoria_residuo)
-
-    #         db.session.commit()
-
-
-
-    #         message = f"Ecoponto editado com sucesso"
-    #         logging.debug(message)
     
-    #     except IntegrityError as error:
-    #         message = f"Error create ecoponto: {error}"
-    #         logging.warning(message)
-    #         abort(
-    #             400,
-    #             message="Erro ao criar ecoponto.",
-    #         )
-    #     except SQLAlchemyError as error:
-    #         message = f"Error create ecoponto: {error}"
-    #         logging.warning(message)
-    #         abort(500, message="Server Error.")
-
-    #     residuo_schema = ResiduoSchema()
-    #     result = residuo_schema.dump(residuo)
-
-    #     context = {
-    #         "code": 200,
-    #         "status": "OK",
-    #         "message": "",
-    #         "values": result
-    #     }
-        
-    #     return jsonify(context)
+    def delete(self, residuo_id):
 
 
+        try:
+            residuo = ResiduoModel().query.get_or_404(residuo_id)
+            db.session.delete(residuo)
+            db.session.commit()
 
-    # def delete(self, residuo_id):
-
-
-    #     try:
-    #         residuo = ResiduoModel().query.get_or_404(residuo_id)
-
-    #         categorias = residuo.categoria
-    #         for cat in categorias:
-    #             db.session.delete(cat)
-
-    #         db.session.delete(residuo)
-    #         db.session.commit()
-
-    #         message = f"Resíduo excluído com sucesso"
-    #         logging.debug(message)
+            message = f"Resíduo excluído com sucesso"
+            logging.debug(message)
     
-    #     except IntegrityError as error:
-    #         message = f"Error delete ecoponto: {error}"
-    #         logging.warning(message)
-    #         abort(
-    #             400,
-    #             message="Erro ao deletar resíduo."
-    #         )
-    #     except SQLAlchemyError as error:
-    #         message = f"Error delete resíduo: {error}"
-    #         logging.warning(message)
-    #         abort(500, message="Server Error.")
+        except IntegrityError as error:
+            message = f"Error delete ecoponto: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar resíduo."
+            )
+        except SQLAlchemyError as error:
+            message = f"Error delete resíduo: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
 
-    #     context = {
-    #         "code": 200,
-    #         "status": "OK",
-    #         "message": message,
-    #         "errors": {}
-    #     }
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": message,
+            "errors": {}
+        }
 
-    #     return jsonify(context)
+        return jsonify(context)
 
 
+    @blp.arguments(ResiduoPostSchema)
+    @blp.response(200, RetornoResiduoSchema)
+    def put(self, residuo_data, residuo_id):
         
+        residuo = ResiduoModel().query.get_or_404(residuo_id)
+        descricao = residuo_data['descricao']
+        residuo.descricao = descricao
+        residuo.icone = residuo_data.get('icone')
+        residuo.url_midia = residuo_data.get('url_midia')
+        residuo.recolhido_em_ecoponto = residuo_data.get('recolhido_em_ecoponto')
+        categorias = residuo_data.get('categoria')
+
+        # validações:
+        residuo_descricao =  ResiduoModel.query.filter(ResiduoModel.descricao == descricao).first()
+        if residuo_descricao.id != residuo.id:
+            abort(409, message="Resíduo com essa descrição já existe")
+
+        # Salva em BD
+        try:
+            categorias_anteriores = residuo.categoria
+            db.session.add(residuo)
+
+            for ca in categorias_anteriores:
+                if ca not in categorias:
+                    print(ca)
+
+                    cat_res = CategoriaResiduoModel.query.filter(
+                        CategoriaResiduoModel.categoria_id == ca.id, 
+                        CategoriaResiduoModel.residuo_id == residuo.id
+                    ).first()
+
+                    db.session.delete(cat_res)
+                    
+
+            if categorias:
+                for categoria in categorias:
+                    categoria_id = categoria.get('id')
+                    categoriao_object = CategoriaModel().query.get_or_404(categoria_id)
+
+                    categoria_residuo = CategoriaResiduoModel(
+                        residuo_id=residuo.id,
+                        categoria_id=categoriao_object.id
+                    )
+                    db.session.add(categoria_residuo)
+
+            db.session.commit()
 
 
+
+            message = f"Resíduo editado com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error create residuo: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao criar residuo.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error create residuo: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        residuo_schema = ResiduoSchema()
+        result = residuo_schema.dump(residuo)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result
+        }
+        
+        return jsonify(context)
 
 
 @blp.route("/residuo")
