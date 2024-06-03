@@ -1,4 +1,5 @@
 import logging.handlers
+from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from models.categoria import CategoriaModel
@@ -6,13 +7,164 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from extensions.database import db
 from models.categoria_residuo import CategoriaResiduoModel
 from models.residuo import ResiduoModel
-from schemas.categoria_residuo import CategoriaSchema, PlainCategoriaSchema
+from schemas.categoria_residuo import CategoriaSchema, PlainCategoriaSchema, RetornoCategoriaSchema, SearchSchema
 
 blp = Blueprint("Categorias", "Categorias", description="Operações sobre categorias de resíduos")
 
 
+
+@blp.route("/categoria/<int:categoria_id>")
+class Categoria(MethodView):
+
+    @blp.response(200, RetornoCategoriaSchema)
+    def get(self, categoria_id):
+        
+        categoria = CategoriaModel().query.get_or_404(categoria_id)
+        categoria_schema = CategoriaSchema()
+        result = categoria_schema.dump(categoria)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result
+        }
+        
+        return jsonify(context)
+
+
+    def delete(self, categoria_id):
+        
+        try:
+            categoria = CategoriaModel().query.get_or_404(categoria_id)
+            db.session.delete(categoria)
+            db.session.commit()
+
+            message = f"Categoria excluído com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error delete categoria: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao deletar categoria."
+            )
+        except SQLAlchemyError as error:
+            message = f"Error delete categoria: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": message,
+            "errors": {}
+        }
+
+        return jsonify(context)
+
+    
+    @blp.arguments(PlainCategoriaSchema)
+    @blp.response(200, CategoriaSchema)
+    def put(self, categoria_data, categoria_id):
+
+        categoria = CategoriaModel().query.get_or_404(categoria_id)
+        # Dados recebidos:
+
+        
+        descricao = categoria_data['descricao']
+        categoria.descricao = descricao
+        categoria.icone = categoria_data.get('icone')
+        categoria.url_midia = categoria_data.get('url_midia')
+
+
+        # validações:
+        categoria_descricao =  CategoriaModel.query.filter(CategoriaModel.descricao == descricao).first()
+        
+        if categoria_descricao.id != categoria.id:
+            abort(409, message="Categoria com essa descrição já existe")
+
+        # Salva em BD
+        try:
+            db.session.add(categoria)
+            db.session.commit()
+
+            message = f"Categoria editada com sucesso"
+            logging.debug(message)
+    
+        except IntegrityError as error:
+            message = f"Error update categoria: {error}"
+            logging.warning(message)
+            abort(
+                400,
+                message="Erro ao editar categoria.",
+            )
+        except SQLAlchemyError as error:
+            message = f"Error update categoria: {error}"
+            logging.warning(message)
+            abort(500, message="Server Error.")
+
+        categoria_schema = CategoriaSchema()
+        result = categoria_schema.dump(categoria)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": message,
+            "value": result
+        }
+
+        return jsonify(context)
+    
+
 @blp.route("/categoria")
 class Categorias(MethodView):
+
+    @blp.arguments(SearchSchema, location="query")
+    @blp.response(200, RetornoCategoriaSchema(many=True))
+    def get(self, query_args):
+        """
+        Retorna uma lista de categoria filtrados pelos critérios informados.
+
+       **Descrição**: Filtra as categorias por palavra cheve, se informado.
+        Serão retornadas apenas categorias ativas e que estão disponíveis para ecoponto.
+
+        **Parâmetros**:
+            query_args (dict): Argumentos de consulta e para paginação.
+                - palavra_chave (str): descrição da categoria.
+
+            **Retorna**:
+                Um objeto JSON com a lista de categorias filtrados pelos critérios informados.
+        """
+
+        result_lista = []
+
+        palavra_chave = query_args.get("palavra_chave")
+
+        query = CategoriaModel.query.filter(CategoriaModel.ativo)
+
+  
+        if palavra_chave:
+            query = query.filter(CategoriaModel.descricao.ilike(f'%{palavra_chave}%'))
+        
+
+        for categoria in query:
+            categoria_schema = CategoriaSchema()
+            result = categoria_schema.dump(categoria)
+            
+            result_lista.append(result)
+
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": "",
+            "values": result_lista,
+        }
+        
+        return jsonify(context)
+
+
 
     @blp.arguments(PlainCategoriaSchema)
     @blp.response(201, CategoriaSchema)
@@ -73,35 +225,16 @@ class Categorias(MethodView):
             logging.warning(message)
             abort(500, message="Server Error.")
 
-        return categoria
-    
-    # @blp.arguments(None, description="ATENÇÃO: resurso irá excluir todos os registros - usar somente em desenvolimento")
-    # def delete(self):
-    
-    #     categorias = CategoriaModel.query.all()
 
-    #     # Deletar
-    #     try:
+        categoria_schema = CategoriaSchema()
+        result = categoria_schema.dump(categoria)
 
-    #         for categoria in categorias:
-    #             db.session.delete(categoria)
-    #         db.session.commit()
+        context = {
+            "code": 200,
+            "status": "OK",
+            "message": message,
+            "value": result
+        }
 
-    #         message = f"Categorias deletadas com sucesso"
-    #         logging.debug(message)
-    
-    #     except IntegrityError as error:
-    #         message = f"Error delete categorias: {error}"
-    #         logging.warning(message)
-    #         abort(
-    #             400,
-    #             message="Erro ao deletar categorias.",
-    #         )
-            
-    #     except SQLAlchemyError as error:
-    #         message = f"Error delete categorias: {error}"
-    #         logging.warning(message)
-    #         abort(500, message="Server Error.")
-
-    #     return {"message": "Todos registros deletados."}
+        return jsonify(context)
     

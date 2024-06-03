@@ -1,10 +1,12 @@
 from marshmallow import Schema, fields
 
-# retorno: classe com a representação padronizada de saída
-class RetornoSchema(Schema):
-    code = fields.Str(default='200', dump_only=True)
-    status = fields.Str(default='OK', dump_only=True)
-    message = fields.Str( dump_only=True)
+from schemas.retorno import RetornoSchema
+
+
+
+# argumentos de pesquisa de publicação
+class SearchSchema(Schema):
+    palavra_chave = fields.Str(required=False)
 
 
 class ItemCategoriaSchema(Schema):
@@ -39,7 +41,13 @@ class PlainResiduoSchema(Schema):
 class CategoriaSchema(PlainResiduoSchema):
     residuo = fields.List(fields.Nested(PlainResiduoSchema()), dump_only=True)
    
-    
+
+class RetornoCategoriaSchema(RetornoSchema):
+    values= fields.Nested(CategoriaSchema())
+  
+
+
+
 class ResiduoSchema(PlainResiduoSchema):
     categoria = fields.List(fields.Nested(PlainCategoriaSchema), required=True)
     
