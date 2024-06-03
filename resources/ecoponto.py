@@ -20,6 +20,7 @@ from schemas.empresa_ecoponto import (
     EcopontoFuncionamentoSchema,
     EcopontoGetSchema,
     EcopontoListaSituacaoSchema,
+    EcopontoLocalizacaoResiduoSchema,
     EcopontoLocalizacaoSchema,
     EcopontoLocalizacaoUpdateSchema, 
     EcopontoResiduoSchema,
@@ -436,9 +437,10 @@ class Ecopontos(MethodView):
         return jsonify(context)
 
 
-    @blp.arguments(EcopontoLocalizacaoSchema)
+    @blp.arguments(EcopontoLocalizacaoResiduoSchema)
     @blp.response(201, RetornoEcopontoSchema)
     def post(self, ecoponto_data):
+
         """
            Cria um novo ecoponto.
 
@@ -558,7 +560,7 @@ class Ecopontos(MethodView):
             logging.warning(message)
             abort(500, message="Server Error.")
 
-        ecoponto_schema = EcopontoLocalizacaoSchema()
+        ecoponto_schema = EcopontoGetSchema()
         result = ecoponto_schema.dump(ecoponto)
         context = {
             "code": 201,
