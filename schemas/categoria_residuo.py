@@ -6,7 +6,7 @@ from schemas.retorno import RetornoSchema
 
 # argumentos de pesquisa de publicação
 class SearchSchema(Schema):
-    palavra_chave = fields.Str(required=False)
+    descricao = fields.Str(required=False)
 
 
 class ItemCategoriaSchema(Schema):

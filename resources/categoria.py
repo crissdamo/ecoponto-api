@@ -137,13 +137,13 @@ class Categorias(MethodView):
 
         result_lista = []
 
-        palavra_chave = query_args.get("palavra_chave")
+        descricao = query_args.get("descricao")
 
         query = CategoriaModel.query.filter(CategoriaModel.ativo)
 
   
-        if palavra_chave:
-            query = query.filter(CategoriaModel.descricao.ilike(f'%{palavra_chave}%'))
+        if descricao:
+            query = query.filter(CategoriaModel.descricao.ilike(f'%{descricao}%'))
         
 
         for categoria in query:
