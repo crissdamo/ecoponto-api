@@ -846,9 +846,10 @@ class EcopontoFuncionamento(MethodView):
 
         # extrai valor do enum
         situacao = result.get("situacao")
-        valor, nome = retira_valor_enumSituacao(situacao)
-        result["situacao_enum"] = nome
-        result["situacao"] = valor
+        if situacao:
+            valor, nome = retira_valor_enumSituacao(situacao)
+            result["situacao_enum"] = nome
+            result["situacao"] = valor
 
         context = {
             "code": 201,
