@@ -332,7 +332,6 @@ class ArtesPublicitarias(MethodView):
             logging.debug(message)
     
         except IntegrityError as error:
-            print(error)
             message = f"Error create arte publicitária: {error}"
             logging.warning(message)
             abort(
@@ -340,7 +339,6 @@ class ArtesPublicitarias(MethodView):
                 message="Erro ao criar arte publicitária.",
             )
         except SQLAlchemyError as error:
-            print(error)
             message = f"Error create arte publicitária: {error}"
             logging.warning(message)
             abort(500, message="Server Error.")

@@ -119,7 +119,6 @@ class RegistrarUsuario(MethodView):
         usuario_sistema = False
 
         if telefone:
-            print(telefone)
             if not validar_telefone(telefone):
                 abort(409, message="Formato do telefone inválido")
         

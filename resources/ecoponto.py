@@ -22,7 +22,6 @@ from schemas.empresa_ecoponto import (
     EcopontoListaSituacaoSchema,
     EcopontoLocalizacaoResiduoSchema,
     EcopontoLocalizacaoSchema,
-    EcopontoLocalizacaoUpdateSchema, 
     EcopontoResiduoSchema,
     EcopontoSearchSchema,
     EcopontoSituacaoSchema,
@@ -389,7 +388,7 @@ class Ecopontos(MethodView):
 
             **Parâmetros**:
                 query_args (dict): Argumentos de consulta e para paginação.
-                    - residuo_id (int): ID do resíduo.
+                    - residuo_id (string): string com isd dos resíduos. Exemplo: "1, 3, 5, 9, 10".
                     - localizacao (str): termo que corresponde a parte de uma localização.
                     - page (int): Número da página.
                     - page_size (int): Número de registros por página.
@@ -423,9 +422,34 @@ class Ecopontos(MethodView):
             )
 
         if residuo_id:
-            residuo = ResiduoModel.query.get_or_404(residuo_id)
-            ecopontos_ids = [ecoponto.id for ecoponto in residuo.ecoponto]
-            query = query.filter(EcopontoModel.id.in_(ecopontos_ids))
+            try:
+                ecopontos_ids = []
+                # Sua string original
+                s = residuo_id
+
+                # Remover os colchetes
+                s = s.strip("[]")
+
+                # Remove os espaços em branco
+                s = s.replace(" ", "")
+
+                # Dividir a string em elementos individuais e converter para inteiros
+                numbers = s.split(',')
+
+                # Remover duplicatas mantendo a ordem
+                unique_numbers = list(dict.fromkeys(numbers))
+
+                for id in unique_numbers:
+                    if str(id).isdigit():
+                        residuo = ResiduoModel.query.filter(ResiduoModel.id == id).first()
+                        if residuo:
+                            ecopontos_ids += [ecoponto.id for ecoponto in residuo.ecoponto]
+                if ecopontos_ids:
+                    query = query.filter(EcopontoModel.id.in_(ecopontos_ids))
+
+            except Exception as e:
+                mensagem = f"Erro ao converter string em lista. {e}"
+                logging.error(mensagem)
 
         total_registros = query.count()
 

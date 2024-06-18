@@ -25,6 +25,7 @@ class PlainEmpresaUpdateSchema(Schema):
     aceite_termo = fields.List(fields.Nested(AceiteTermoSchema), required=False)
 
 
+
 class PlainEmpresaSchema(Schema):
     id = fields.Int(dump_only=True)
     nome_fantasia = fields.Str(required=True)
@@ -58,7 +59,6 @@ class PlainLocalizacaoSchema(Schema):
     url_localizacao = fields.Str(required=False, dump_only=True)    
 
 class PlainLocalizacaoUpdateSchema(Schema):
-
     rua = fields.Str(required=False)
     numero = fields.Str(required=False)
     bairro = fields.Str(required=False)
@@ -147,7 +147,7 @@ class RetornoListaEmpresaSchema(RetornoSchema):
 
 # argumentos de pesquisa
 class EcopontoSearchSchema(PaginacaoSearchSchema):
-    residuo_id = fields.Int(required=False)
+    residuo_id = fields.Str(required=False)
     localizacao = fields.Str(required=False)
     
 

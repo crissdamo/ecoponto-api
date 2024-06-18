@@ -90,7 +90,6 @@ class Residuo(MethodView):
 
             for ca in categorias_anteriores:
                 if ca not in categorias:
-                    print(ca)
 
                     cat_res = CategoriaResiduoModel.query.filter(
                         CategoriaResiduoModel.categoria_id == ca.id, 
