@@ -1643,9 +1643,10 @@ class EcopontoControle(MethodView):
             result_dict[situacao.name] = {"total": 0, "situacao":situacao.value, "situacao_enum": situacao.name, "ecopontos": []}
    
         for ecoponto in ecopontos:
-            ecoponto_schema = EcopontoLocalizacaoSchema()
+            ecoponto_schema = EcopontoGetSchema()
             result = ecoponto_schema.dump(ecoponto)
             dias_funcionamento = result.get('dia_funcionamento')
+            result["funcionamento"] = ""
 
             if dias_funcionamento:
                 dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)

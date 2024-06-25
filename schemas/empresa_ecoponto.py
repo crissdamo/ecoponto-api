@@ -111,6 +111,7 @@ class EcopontoGetSchema(PlainEcopontoSchema):
     dia_funcionamento = fields.List(fields.Nested(PainEcopontoDiaFuncionamento), required=False)
     residuo = fields.List(fields.Nested(PlainResiduoSchema), required=False)
     funcionamento = fields.Str(required=False)
+    empresa = fields.Nested(PlainEmpresaSchema)
 
 # Empresa + ecoponto
 class EmpresaUpdateSchema(PlainEmpresaUpdateSchema):
@@ -219,7 +220,7 @@ class RetornoEcopontoSituacaoSchema(RetornoSchema):
 
 # listas de ecoponto por situação
 class EcopontoLista(EcopontoSituacaoSchema):
-    ecopontos = fields.List(fields.Nested(EcopontoLocalizacaoSchema))
+    ecopontos = fields.List(fields.Nested(EcopontoGetSchema))
     total = fields.Int()
 
 
