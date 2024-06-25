@@ -1651,7 +1651,15 @@ class EcopontoControle(MethodView):
             if dias_funcionamento:
                 dia_funcionamento = transforma_dia_funcionamento(dias_funcionamento)
                 result["dia_funcionamento"] = dia_funcionamento
-                result["funcionamento"] = agrupar_horarios(dias_funcionamento)
+                
+                # funcionamento como string
+                funcionamento = agrupar_horarios(dias_funcionamento)
+                result["funcionamento"] = funcionamento
+
+                # Funcionamentos como lista
+                funcionamentos = funcionamento.replace(' e ', ', ')
+                lista = [item.strip() for item in funcionamentos.split(',')]
+                result["funcionamentos"] = lista
 
             situacao = result.get("situacao")
             if situacao:
